@@ -1,0 +1,1139 @@
+INFO:     Will watch for changes in these directories: ['/Users/nishant.lakhera/projects/learning/ai-multi-agent-project/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [30545] using StatReload
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [30552]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:53058 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53101 - "GET /health HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Tell me about Tesla.com
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+WARNING:backend:[router_agent] Parsing failed, using fallback: Invalid json output: Here is the output:
+
+{"route": "web", "confidence": 1.0, "reasoning": "The query mentions a specific company (.com) and does not contain any database-related keywords."}
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+WARNING:backend:[router_agent] Invalid route, using heuristic: web
+INFO:backend:[router_agent] Final route=web for query='Tell me about Tesla.com'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[web_agent] LLM plan: Here is the search plan:
+
+```
+{
+    "queries": [
+        "tesla.com website",
+        "tesla official website features",
+        "tesla online presence"
+    ],
+    "goal": "To gather information about the official website of Tesla, including its features and online presence."
+}
+```
+INFO:httpx:HTTP Request: POST http://localhost:8001/plan "HTTP/1.1 200 OK"
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 3652)
+INFO:backend:[final_answer_agent] Generating answer for route=web
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 1061)
+INFO:     127.0.0.1:53109 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: How many users?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] LLM decision: db (confidence: 1.00)
+INFO:backend:[router_agent] Reasoning: The query is asking for a count of users, which is a database query
+INFO:backend:[router_agent] Final route=db for query='How many users?'
+INFO:backend:[db_agent] Calling MCP service for query: How many users?
+INFO:httpx:HTTP Request: POST http://localhost:8001/db "HTTP/1.1 200 OK"
+INFO:backend:[db_agent] Query successful: 1 rows returned
+INFO:backend:[db_agent] SQL: SELECT COUNT(*) FROM users;
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 42)
+INFO:backend:[final_answer_agent] Generating answer for route=db
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 153)
+INFO:     127.0.0.1:53227 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Troubleshoot Confluence
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+WARNING:backend:[router_agent] Parsing failed, using fallback: Invalid json output: Here is the output:
+
+{"route": "rag", "confidence": 1.0, "reasoning": "Troubleshooting Confluence falls under internal documentation and guides"}
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+WARNING:backend:[router_agent] Invalid route, using heuristic: rag
+INFO:backend:[router_agent] Final route=rag for query='Troubleshoot Confluence'
+INFO:backend:[rag_agent] Calling MCP service for query: Troubleshoot Confluence
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 225)
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 4615)
+INFO:backend:[final_answer_agent] Generating answer for route=rag
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 469)
+INFO:     127.0.0.1:53255 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Latest AI news
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+WARNING:backend:[router_agent] Parsing failed, using fallback: Invalid json output: Here is the output:
+
+{"route": "web", "confidence": 0.9, "reasoning": "The query mentions 'news', which suggests external information"}
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+WARNING:backend:[router_agent] Invalid route, using heuristic: web
+INFO:backend:[router_agent] Final route=web for query='Latest AI news'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[web_agent] LLM plan: Here is the search plan:
+
+```
+{
+    "queries": [
+        "AI latest updates",
+        "Artificial intelligence current events",
+        "AI breakthroughs and advancements"
+    ],
+    "goal": "To gather the latest news and developments in Artificial Intelligence, including breakthroughs, advancements, and current trends."
+}
+```
+INFO:httpx:HTTP Request: POST http://localhost:8001/plan "HTTP/1.1 200 OK"
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 3753)
+INFO:backend:[final_answer_agent] Generating answer for route=web
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 1428)
+INFO:     127.0.0.1:53300 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: hi
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+WARNING:backend:[router_agent] Parsing failed, using fallback: Invalid json output: Here is the output:
+
+{"route": "rag", "confidence": 1.0, "reasoning": "The query 'hi' appears to be a general inquiry and does not contain specific information that would warrant a database or web search."}
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+WARNING:backend:[router_agent] Invalid route, using heuristic: rag
+INFO:backend:[router_agent] Final route=rag for query='hi'
+INFO:backend:[rag_agent] Calling MCP service for query: hi
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 149)
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 4718)
+INFO:backend:[final_answer_agent] Generating answer for route=rag
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 457)
+INFO:     127.0.0.1:54243 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: tell me about today date 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+WARNING:backend:[router_agent] Parsing failed, using fallback: Invalid json output: Here is the output:
+
+{"route": "rag", "confidence": 1.0, "reasoning": "Internal documentation and guides"}
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+WARNING:backend:[router_agent] Invalid route, using heuristic: rag
+INFO:backend:[router_agent] Final route=rag for query='tell me about today date '
+INFO:backend:[rag_agent] Calling MCP service for query: tell me about today date 
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 236)
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 3855)
+INFO:backend:[final_answer_agent] Generating answer for route=rag
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 342)
+INFO:     127.0.0.1:54771 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: do you know about bangalore ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+WARNING:backend:[router_agent] Parsing failed, using fallback: Invalid json output: Here is the output:
+
+{"route": "web", "confidence": 1.0, "reasoning": "The query mentions a city (Bangalore), which suggests external information"}
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+WARNING:backend:[router_agent] Invalid route, using heuristic: rag
+INFO:backend:[router_agent] Final route=rag for query='do you know about bangalore ? '
+INFO:backend:[rag_agent] Calling MCP service for query: do you know about bangalore ? 
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 100)
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 4701)
+INFO:backend:[final_answer_agent] Generating answer for route=rag
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 10)
+INFO:     127.0.0.1:54948 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: what is bangalore ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+WARNING:backend:[router_agent] Parsing failed, using fallback: Invalid json output: Here is the output:
+
+{"route": "web", "confidence": 1.0, "reasoning": "The query mentions a city name, which suggests external information"}
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+WARNING:backend:[router_agent] Invalid route, using heuristic: rag
+INFO:backend:[router_agent] Final route=rag for query='what is bangalore ? '
+INFO:backend:[rag_agent] Calling MCP service for query: what is bangalore ? 
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 100)
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 4525)
+INFO:backend:[final_answer_agent] Generating answer for route=rag
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 532)
+INFO:     127.0.0.1:55021 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Count the users in the database AND tell me how to troubleshoot Confluence
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+WARNING:backend:[router_agent] Parsing failed, using fallback: Invalid json output: Here is the output:
+
+{"route": "multi", "confidence": 1.0, "reasoning": "The query contains 'and' connecting two different question types ('Count the users in the database' and 'tell me how to troubleshoot Confluence'), which indicates a multi-source query."}
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+WARNING:backend:[router_agent] Invalid route, using heuristic: db
+INFO:backend:[router_agent] Final route=db for query='Count the users in the database AND tell me how to troubleshoot Confluence'
+INFO:backend:[db_agent] Calling MCP service for query: Count the users in the database AND tell me how to troubleshoot Confluence
+INFO:httpx:HTTP Request: POST http://localhost:8001/db "HTTP/1.1 200 OK"
+INFO:backend:[db_agent] Query successful: 1 rows returned
+INFO:backend:[db_agent] SQL: SELECT COUNT(*) FROM users;
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 42)
+INFO:backend:[final_answer_agent] Generating answer for route=db
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 1546)
+INFO:     127.0.0.1:55572 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Count all users AND search for Tesla news AND how to troubleshoot Confluence
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+WARNING:backend:[router_agent] Parsing failed, using fallback: Invalid json output: Here is the output:
+
+{"route": "multi", "confidence": 1.0, "reasoning": "The query contains 'and' connecting different question types, indicating a need for multiple sources."}
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+WARNING:backend:[router_agent] Invalid route, using heuristic: db
+INFO:backend:[router_agent] Final route=db for query='Count all users AND search for Tesla news AND how to troubleshoot Confluence'
+INFO:backend:[db_agent] Calling MCP service for query: Count all users AND search for Tesla news AND how to troubleshoot Confluence
+INFO:httpx:HTTP Request: POST http://localhost:8001/db "HTTP/1.1 200 OK"
+INFO:backend:[db_agent] Query successful: 1 rows returned
+INFO:backend:[db_agent] SQL: SELECT COUNT(*) 
+FROM users;
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 42)
+INFO:backend:[final_answer_agent] Generating answer for route=db
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 1649)
+INFO:     127.0.0.1:55762 - "POST /api/chat HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'agents/router_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [30552]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [33694]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:backend:[router_agent] Analyzing query: Count users AND search Tesla news
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: multi (confidence: 0.90)
+INFO:backend:[router_agent] Final route=multi for query='Count users AND search Tesla news'
+INFO:backend:[rag_agent] Calling MCP service for query: Count users AND search Tesla news
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 108)
+INFO:backend:[db_agent] Calling MCP service for query: Count users AND search Tesla news
+INFO:httpx:HTTP Request: POST http://localhost:8001/db "HTTP/1.1 200 OK"
+INFO:backend:[db_agent] Query successful: 1 rows returned
+INFO:backend:[db_agent] SQL: SELECT COUNT(*) 
+FROM users;
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[web_agent] LLM plan: Here is the search plan:
+
+```
+{
+  "queries": [
+    "user count AND tesla news",
+    "tesla news audience size",
+    "who searches for tesla news"
+  ],
+  "goal": "To estimate the number of users interested in Tesla news and identify the characteristics of those users"
+}
+```
+INFO:httpx:HTTP Request: POST http://localhost:8001/plan "HTTP/1.1 200 OK"
+INFO:backend:[fusion_agent] Fusing 3 sources with LLM
+WARNING:  StatReload detected changes in 'agents/router_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[fusion_agent] LLM fusion complete (length: 1472)
+INFO:backend:[final_answer_agent] Generating answer for route=multi
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 767)
+INFO:     127.0.0.1:56034 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [33694]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [34289]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:backend:[router_agent] Analyzing query: How many users in database AND how do I troubleshoot Confluence?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: multi (confidence: 0.90)
+INFO:backend:[router_agent] Final route=multi for query='How many users in database AND how do I troubleshoot Confluence?'
+INFO:backend:[rag_agent] Calling MCP service for query: How many users in database AND how do I troubleshoot Confluence?
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 108)
+INFO:backend:[db_agent] Calling MCP service for query: How many users in database AND how do I troubleshoot Confluence?
+INFO:httpx:HTTP Request: POST http://localhost:8001/db "HTTP/1.1 200 OK"
+INFO:backend:[db_agent] Query successful: 1 rows returned
+INFO:backend:[db_agent] SQL: SELECT COUNT(*) FROM users;
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[web_agent] LLM plan: Here is the search plan:
+
+```
+{
+    "queries": [
+        {"query": "number of users in confluence database", "extract": ["approximate number of users", "confluence user count"]},
+        {"query": "confluence troubleshooting guide", "extract": ["common errors", "troubleshooting steps", "tips for fixing issues"]},
+        {"query": "confluence error solutions", "extract": ["step-by-step solutions", "fixing common confluence errors", "resolving confluence issues"]}
+    ],
+    "goal": "To find the number of users in a Confluence database and provide troubleshooting guidance to resolve common issues with the platform"
+}
+```
+
+This search plan includes three queries that can help answer the user's question:
+
+1. The first query targets finding the approximate number of users in a Confluence database.
+2. The second query aims at providing a comprehensive guide for troubleshooting common issues with Confluence, including error messages and step-by-step solutions.
+3. The third query is designed to find specific solutions for fixing errors and resolving issues in Confluence, which can be useful for the user who wants to troubleshoot their own problems.
+
+By extracting relevant information from these queries, the user should be able to answer their original question about the number of users in a database and receive guidance on how to troubleshoot common confluence issues.
+INFO:httpx:HTTP Request: POST http://localhost:8001/plan "HTTP/1.1 200 OK"
+INFO:backend:[fusion_agent] Fusing 2 sources with LLM
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[fusion_agent] LLM fusion complete (length: 3266)
+INFO:backend:[final_answer_agent] Generating answer for route=multi
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 1416)
+INFO:     127.0.0.1:56259 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: What is the capital of France?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: web (confidence: 0.90)
+INFO:backend:[router_agent] Final route=web for query='What is the capital of France?'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[web_agent] LLM plan: Here's a short search plan for your question:
+
+```
+{
+    "queries": [
+        "capital of France",
+        "what is the capital of France",
+        "France capital city"
+    ],
+    "goal": "Extract the name of the capital city of France from the top search results"
+}
+```
+INFO:httpx:HTTP Request: POST http://localhost:8001/plan "HTTP/1.1 200 OK"
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 4815)
+INFO:backend:[final_answer_agent] Generating answer for route=web
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 299)
+INFO:     127.0.0.1:56808 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Hello, how are you?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+WARNING:backend:[router_agent] Unclear response, using heuristic: rag
+INFO:backend:[router_agent] Decision: rag (confidence: 0.50)
+INFO:backend:[router_agent] Final route=rag for query='Hello, how are you?'
+INFO:backend:[rag_agent] Calling MCP service for query: Hello, how are you?
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 100)
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 4691)
+INFO:backend:[final_answer_agent] Generating answer for route=rag
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 1530)
+INFO:     127.0.0.1:56933 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: What is 25 * 47?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+WARNING:backend:[router_agent] Unclear response, using heuristic: rag
+INFO:backend:[router_agent] Decision: rag (confidence: 0.50)
+INFO:backend:[router_agent] Final route=rag for query='What is 25 * 47?'
+INFO:backend:[rag_agent] Calling MCP service for query: What is 25 * 47?
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 100)
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 3790)
+INFO:backend:[final_answer_agent] Generating answer for route=rag
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 62)
+INFO:     127.0.0.1:57051 - "POST /api/chat HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'agents/router_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [34289]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [35619]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'agents/general_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35619]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [35652]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'agents/general_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35652]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [35661]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'agents/router_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35661]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [35665]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'graphs/multi_agent_graph.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35665]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [35672]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'graphs/multi_agent_graph.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35672]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [35685]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'graphs/state_schema.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35685]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [35703]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'graphs/state_schema.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35703]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [35704]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'agents/final_answer_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35704]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [35723]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'agents/final_answer_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35723]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [35724]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:backend:[router_agent] Analyzing query: Hello, how are you?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='Hello, how are you?'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response (length: 138)
+INFO:backend:[final_answer_agent] Using general response (length: 138)
+INFO:     127.0.0.1:57743 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: What is 125 * 8?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='What is 125 * 8?'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response (length: 30)
+INFO:backend:[final_answer_agent] Using general response (length: 30)
+INFO:     127.0.0.1:57790 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: What is the capital of Japan?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='What is the capital of Japan?'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response (length: 30)
+INFO:backend:[final_answer_agent] Using general response (length: 30)
+INFO:     127.0.0.1:57830 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Hi there!
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='Hi there!'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response (length: 53)
+INFO:backend:[final_answer_agent] Using general response (length: 53)
+INFO:     127.0.0.1:57898 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: What is 15 * 23?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='What is 15 * 23?'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response (length: 42)
+INFO:backend:[final_answer_agent] Using general response (length: 42)
+INFO:     127.0.0.1:57910 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Count users
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: db (confidence: 0.90)
+INFO:backend:[router_agent] Final route=db for query='Count users'
+INFO:backend:[db_agent] Calling MCP service for query: Count users
+INFO:httpx:HTTP Request: POST http://localhost:8001/db "HTTP/1.1 200 OK"
+INFO:backend:[db_agent] Query successful: 1 rows returned
+INFO:backend:[db_agent] SQL: SELECT COUNT(*) FROM users;
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 42)
+INFO:backend:[final_answer_agent] Generating answer for route=db
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 167)
+INFO:     127.0.0.1:57918 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Troubleshoot Confluence
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: rag (confidence: 0.90)
+INFO:backend:[router_agent] Final route=rag for query='Troubleshoot Confluence'
+INFO:backend:[rag_agent] Calling MCP service for query: Troubleshoot Confluence
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 230)
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 4615)
+INFO:backend:[final_answer_agent] Generating answer for route=rag
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 693)
+INFO:     127.0.0.1:57939 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Latest AI news
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: web (confidence: 0.90)
+INFO:backend:[router_agent] Final route=web for query='Latest AI news'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[web_agent] LLM plan: Here is the search plan:
+
+{
+"queries": [
+"LATEST AI NEWS",
+"AIPROGRESS RECENTLY",
+"AI DEVELOPMENTS CURRENTLY"
+],
+"goal": "to extract latest news and developments in the field of Artificial Intelligence"
+}
+
+Note: You can modify these queries based on your specific needs.
+INFO:httpx:HTTP Request: POST http://localhost:8001/plan "HTTP/1.1 200 OK"
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 10)
+INFO:backend:[final_answer_agent] Generating answer for route=web
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 2296)
+INFO:     127.0.0.1:57987 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Count users AND Tesla news
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: multi (confidence: 0.90)
+INFO:backend:[router_agent] Final route=multi for query='Count users AND Tesla news'
+INFO:backend:[rag_agent] Calling MCP service for query: Count users AND Tesla news
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 236)
+INFO:backend:[db_agent] Calling MCP service for query: Count users AND Tesla news
+INFO:httpx:HTTP Request: POST http://localhost:8001/db "HTTP/1.1 200 OK"
+INFO:backend:[db_agent] Query successful: 1 rows returned
+INFO:backend:[db_agent] SQL: SELECT COUNT(u.id) AS total_users, 
+       (SELECT COUNT(*) FROM orders WHERE status = 'COMPLETED') AS completed_orders
+FROM users u;
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[web_agent] LLM plan: Here's a search plan based on the user question:
+
+```
+{
+    "queries": [
+        "site:tesla.com OR site:twitter.com (users + tesla) -news",
+        "tesla + news + users",
+        "site:medium.com | site:techcrunch.com (tesla + news + users)"
+    ],
+    "goal": "To find news articles and online discussions mentioning both Tesla and users, excluding general news"
+}
+```
+
+In this search plan:
+
+* The first query uses site operators to search for mentions of "users" and "Tesla" on official Tesla websites and Twitter, while excluding non-news content.
+* The second query is a simple combination of keywords to find articles and discussions mentioning both Tesla and users, and the news context.
+* The third query uses OR operator to search for the same keyword combination on Medium and TechCrunch, two popular tech news websites.
+
+The goal is to extract specific information about how users interact with Tesla's products or services, such as user reviews, feedback, or engagement metrics.
+INFO:httpx:HTTP Request: POST http://localhost:8001/plan "HTTP/1.1 200 OK"
+INFO:backend:[fusion_agent] Fusing 2 sources with LLM
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[fusion_agent] LLM fusion complete (length: 2270)
+INFO:backend:[final_answer_agent] Generating answer for route=multi
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 679)
+INFO:     127.0.0.1:58038 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Hi what is 10 + 2 ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='Hi what is 10 + 2 ? '
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response (length: 45)
+INFO:backend:[final_answer_agent] Using general response (length: 45)
+INFO:     127.0.0.1:58332 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: how many users present. ?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: db (confidence: 0.90)
+INFO:backend:[router_agent] Final route=db for query='how many users present. ?'
+INFO:backend:[db_agent] Calling MCP service for query: how many users present. ?
+INFO:httpx:HTTP Request: POST http://localhost:8001/db "HTTP/1.1 200 OK"
+INFO:backend:[db_agent] Query successful: 1 rows returned
+INFO:backend:[db_agent] SQL: SELECT COUNT(*) FROM users;
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 42)
+INFO:backend:[final_answer_agent] Generating answer for route=db
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 87)
+INFO:     127.0.0.1:58381 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: who is akshay kumar ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: web (confidence: 0.90)
+INFO:backend:[router_agent] Final route=web for query='who is akshay kumar ? '
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[web_agent] LLM plan: Here's a short search plan for the user question:
+
+```
+{
+    "queries": [
+        "Akshay Kumar biography",
+        "Akshay Kumar Wikipedia",
+        "Who is Akshay Kumar in Hindi cinema"
+    ],
+    "goal": "Extract information about Akshay Kumar's background, career, and achievements as an Indian film actor"
+}
+```
+INFO:httpx:HTTP Request: POST http://localhost:8001/plan "HTTP/1.1 200 OK"
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 4580)
+INFO:backend:[final_answer_agent] Generating answer for route=web
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 669)
+INFO:     127.0.0.1:58627 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: what is python language? can you give me a simple code. ?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='what is python language? can you give me a simple code. ?'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response (length: 519)
+INFO:backend:[final_answer_agent] Using general response (length: 519)
+INFO:     127.0.0.1:58958 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: how to troubleshoot confluence 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: rag (confidence: 0.90)
+INFO:backend:[router_agent] Final route=rag for query='how to troubleshoot confluence '
+INFO:backend:[rag_agent] Calling MCP service for query: how to troubleshoot confluence 
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 236)
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 4504)
+INFO:backend:[final_answer_agent] Generating answer for route=rag
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 1281)
+INFO:     127.0.0.1:59062 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: My name is John
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='My name is John'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response (length: 51)
+INFO:backend:[final_answer_agent] Using general response (length: 51)
+INFO:     127.0.0.1:60108 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: What is my name?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='What is my name?'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response (length: 175)
+INFO:backend:[final_answer_agent] Using general response (length: 175)
+INFO:     127.0.0.1:60121 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: My name is John
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='My name is John'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response (length: 51)
+INFO:backend:[final_answer_agent] Using general response (length: 51)
+INFO:     127.0.0.1:60162 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: What is my name?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='What is my name?'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response (length: 189)
+INFO:backend:[final_answer_agent] Using general response (length: 189)
+INFO:     127.0.0.1:60209 - "POST /api/chat HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'api/routes.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35724]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [39938]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'graphs/state_schema.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [39938]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [39952]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'api/routes.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [39952]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [39964]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'agents/general_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [39964]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [39970]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'agents/final_answer_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [39970]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [39978]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'api/routes.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [39978]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [39990]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:backend:[router_agent] Analyzing query: My name is John and I work at Tesla
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='My name is John and I work at Tesla'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 95)
+INFO:backend:[final_answer_agent] Using general response (length: 95)
+INFO:     127.0.0.1:60633 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: What is my name?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='What is my name?'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 18)
+INFO:backend:[final_answer_agent] Using general response (length: 18)
+INFO:     127.0.0.1:60683 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Where do I work?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='Where do I work?'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 18)
+INFO:backend:[final_answer_agent] Using general response (length: 18)
+INFO:     127.0.0.1:60737 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60780 - "GET /api/history/john_doe HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: What is Johns name?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='What is Johns name?'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 187)
+INFO:backend:[final_answer_agent] Using general response (length: 187)
+INFO:     127.0.0.1:60823 - "POST /api/chat HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'services/memory_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [39990]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [41186]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'api/routes.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [41186]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [41203]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:backend:[router_agent] Analyzing query: My favorite color is blue
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='My favorite color is blue'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 112)
+INFO:backend:[final_answer_agent] Using general response (length: 112)
+INFO:     127.0.0.1:60989 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: I have 3 cats
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='I have 3 cats'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 108)
+INFO:backend:[final_answer_agent] Using general response (length: 108)
+INFO:     127.0.0.1:61002 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: What is my favorite color and how many cats do I have?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: multi (confidence: 0.90)
+INFO:backend:[router_agent] Final route=multi for query='What is my favorite color and how many cats do I have?'
+INFO:backend:[rag_agent] Calling MCP service for query: What is my favorite color and how many cats do I have?
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 179)
+INFO:backend:[db_agent] Calling MCP service for query: What is my favorite color and how many cats do I have?
+INFO:httpx:HTTP Request: POST http://localhost:8001/db "HTTP/1.1 200 OK"
+INFO:backend:[db_agent] Query successful: 0 rows returned
+INFO:backend:[db_agent] SQL: None
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[web_agent] LLM plan: Here's a search plan for the user's question:
+
+```
+{
+    "queries": [
+        "favorite color",
+        "number of cats owned by me"
+    ],
+    "goal": "To find out the user's favorite color and the number of cats they own"
+}
+```
+INFO:httpx:HTTP Request: POST http://localhost:8001/plan "HTTP/1.1 200 OK"
+INFO:backend:[fusion_agent] Fusing 2 sources with LLM
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[fusion_agent] LLM fusion complete (length: 1249)
+INFO:backend:[final_answer_agent] Generating answer for route=multi with history
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 494)
+INFO:     127.0.0.1:61013 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61147 - "GET /api/history/alice HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61181 - "DELETE /api/history/alice HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61183 - "GET /api/history/alice HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'api/routes.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [41203]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [42488]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'services/memory_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [42488]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:backend:[MemoryService] Conversation history table ready
+INFO:     Started server process [42656]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'api/routes.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [42656]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:backend:[MemoryService] Conversation history table ready
+INFO:     Started server process [42698]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:backend:[router_agent] Analyzing query: My favorite food is pizza
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='My favorite food is pizza'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 60)
+INFO:backend:[final_answer_agent] Using general response (length: 60)
+INFO:     127.0.0.1:61703 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: What is my favorite food?
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='What is my favorite food?'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 40)
+INFO:backend:[final_answer_agent] Using general response (length: 40)
+INFO:     127.0.0.1:61751 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61796 - "GET /api/history/bob_test HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Show me the structure of conversation_history table
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: db (confidence: 0.90)
+INFO:backend:[router_agent] Final route=db for query='Show me the structure of conversation_history table'
+INFO:backend:[db_agent] Calling MCP service for query: Show me the structure of conversation_history table
+INFO:httpx:HTTP Request: POST http://localhost:8001/db "HTTP/1.1 200 OK"
+INFO:backend:[db_agent] Query successful: 0 rows returned
+INFO:backend:[db_agent] SQL: None
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 10)
+INFO:backend:[final_answer_agent] Generating answer for route=db with history
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 1080)
+INFO:     127.0.0.1:61852 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[MemoryService] Cleaned up 0 old messages (>30 days)
+INFO:     127.0.0.1:61919 - "POST /api/admin/cleanup-history?days=30 HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [42698]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:backend:[MemoryService] Conversation history table ready
+INFO:     Started server process [44122]
+INFO:     Waiting for application startup.
+INFO:backend:Initializing conversation history storage...
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [44122]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:backend:[MemoryService] Conversation history table ready
+INFO:     Started server process [44128]
+INFO:     Waiting for application startup.
+INFO:backend:Initializing conversation history storage...
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'api/routes.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [44128]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:backend:[MemoryService] Conversation history table ready
+INFO:     Started server process [44133]
+INFO:     Waiting for application startup.
+INFO:backend:Initializing conversation history storage...
+INFO:     Application startup complete.
+INFO:     127.0.0.1:62193 - "GET /api/history/bob_test HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: Hi my name is nishant
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='Hi my name is nishant'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 129)
+INFO:backend:[final_answer_agent] Using general response (length: 129)
+INFO:     127.0.0.1:62701 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: what is my name ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='what is my name ? '
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 21)
+INFO:backend:[final_answer_agent] Using general response (length: 21)
+INFO:     127.0.0.1:62765 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: how do you know this ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='how do you know this ? '
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 186)
+INFO:backend:[final_answer_agent] Using general response (length: 186)
+INFO:     127.0.0.1:62809 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: hi
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='hi'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 31)
+INFO:backend:[final_answer_agent] Using general response (length: 31)
+INFO:     127.0.0.1:64248 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: what is my name ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='what is my name ? '
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 46)
+INFO:backend:[final_answer_agent] Using general response (length: 46)
+INFO:     127.0.0.1:64320 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: no it is not my name
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='no it is not my name'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 144)
+INFO:backend:[final_answer_agent] Using general response (length: 144)
+INFO:     127.0.0.1:64391 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: what is my name ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='what is my name ? '
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 70)
+INFO:backend:[final_answer_agent] Using general response (length: 70)
+INFO:     127.0.0.1:64454 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: my name is nishant
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='my name is nishant'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 134)
+INFO:backend:[final_answer_agent] Using general response (length: 134)
+INFO:     127.0.0.1:64523 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: what is my name ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='what is my name ? '
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 33)
+INFO:backend:[final_answer_agent] Using general response (length: 33)
+INFO:     127.0.0.1:64562 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: no my name is ram
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='no my name is ram'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 102)
+INFO:backend:[final_answer_agent] Using general response (length: 102)
+INFO:     127.0.0.1:64614 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: give me a python code to print star pattern for n = 20
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='give me a python code to print star pattern for n = 20'
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 577)
+INFO:backend:[final_answer_agent] Using general response (length: 577)
+INFO:     127.0.0.1:64751 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: what would be the output of this ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='what would be the output of this ? '
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 904)
+INFO:backend:[final_answer_agent] Using general response (length: 904)
+INFO:     127.0.0.1:64870 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: how many orders completed today ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: db (confidence: 0.90)
+INFO:backend:[router_agent] Final route=db for query='how many orders completed today ? '
+INFO:backend:[db_agent] Calling MCP service for query: how many orders completed today ? 
+INFO:httpx:HTTP Request: POST http://localhost:8001/db "HTTP/1.1 200 OK"
+INFO:backend:[db_agent] Query successful: 1 rows returned
+INFO:backend:[db_agent] SQL: SELECT COUNT(*) 
+FROM orders 
+WHERE status = 'completed' AND EXTRACT(DAY FROM created_at) = EXTRACT(DAY FROM CURRENT_TIMESTAMP) AND EXTRACT(HOUR FROM created_at) = EXTRACT(HOUR FROM CURRENT_TIMESTAMP);
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 41)
+INFO:backend:[final_answer_agent] Generating answer for route=db with history
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 441)
+INFO:     127.0.0.1:65033 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: ok , how many orders are pending ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: db (confidence: 0.90)
+INFO:backend:[router_agent] Final route=db for query='ok , how many orders are pending ? '
+INFO:backend:[db_agent] Calling MCP service for query: ok , how many orders are pending ? 
+INFO:httpx:HTTP Request: POST http://localhost:8001/db "HTTP/1.1 200 OK"
+INFO:backend:[db_agent] Query successful: 1 rows returned
+INFO:backend:[db_agent] SQL: SELECT COUNT(*) 
+FROM orders 
+WHERE status = 'pending';
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 41)
+INFO:backend:[final_answer_agent] Generating answer for route=db with history
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 355)
+INFO:     127.0.0.1:65234 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: how many users present ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: db (confidence: 0.90)
+INFO:backend:[router_agent] Final route=db for query='how many users present ? '
+INFO:backend:[db_agent] Calling MCP service for query: how many users present ? 
+INFO:httpx:HTTP Request: POST http://localhost:8001/db "HTTP/1.1 200 OK"
+INFO:backend:[db_agent] Query successful: 1 rows returned
+INFO:backend:[db_agent] SQL: SELECT COUNT(*) FROM users;
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 42)
+INFO:backend:[final_answer_agent] Generating answer for route=db with history
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 308)
+INFO:     127.0.0.1:65372 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: how to troubleshoot login issues ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: rag (confidence: 0.90)
+INFO:backend:[router_agent] Final route=rag for query='how to troubleshoot login issues ? '
+INFO:backend:[rag_agent] Calling MCP service for query: how to troubleshoot login issues ? 
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 108)
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 4841)
+INFO:backend:[final_answer_agent] Generating answer for route=rag with history
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 1381)
+INFO:     127.0.0.1:49223 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: hi ai am not getting why you are including order details every time ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: rag (confidence: 0.90)
+INFO:backend:[router_agent] Final route=rag for query='hi ai am not getting why you are including order details every time ? '
+INFO:backend:[rag_agent] Calling MCP service for query: hi ai am not getting why you are including order details every time ? 
+INFO:httpx:HTTP Request: POST http://localhost:8001/rag "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Retrieved 5 documents
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[rag_agent] Generated answer (length: 230)
+INFO:backend:[fusion_agent] Single source, simple fusion (length: 4758)
+INFO:backend:[final_answer_agent] Generating answer for route=rag with history
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[final_answer_agent] Generated answer (length: 542)
+INFO:     127.0.0.1:49540 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:backend:[router_agent] Analyzing query: what is my name ? 
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[router_agent] Decision: general (confidence: 0.90)
+INFO:backend:[router_agent] Final route=general for query='what is my name ? '
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:backend:[general_agent] Generated response with history (length: 229)
+INFO:backend:[final_answer_agent] Using general response (length: 229)
+INFO:     127.0.0.1:49636 - "POST /api/chat HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'models/user_model.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [44133]
+/Users/nishant.lakhera/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:backend:[MemoryService] Conversation history table ready
+INFO:     Started server process [46708]
+INFO:     Waiting for application startup.
+INFO:backend:Initializing conversation history storage...
+INFO:     Application startup complete.
