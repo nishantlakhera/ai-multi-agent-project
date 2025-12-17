@@ -37,3 +37,9 @@ coverage*.html
 *.cover
 .pytest_cache/
 .mypy_cache/
+
+# Logs
+logs/
+logs/**
+*.log
+*.pid
