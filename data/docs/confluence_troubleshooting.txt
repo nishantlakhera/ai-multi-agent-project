@@ -1,0 +1,140 @@
+# Confluence Troubleshooting Guide
+
+## Common Issues and Solutions
+
+### 1. Page Loading Issues
+
+**Problem**: Pages take too long to load or timeout.
+
+**Solutions**:
+- Clear browser cache and cookies
+- Check network connectivity
+- Verify Confluence server status
+- Disable browser extensions that might interfere
+- Try accessing in incognito/private browsing mode
+
+### 2. Permission Errors
+
+**Problem**: "You don't have permission to view this page" error.
+
+**Solutions**:
+- Verify you're logged in with the correct account
+- Contact your Confluence administrator for access
+- Check if the page has been moved or deleted
+- Verify space permissions settings
+
+### 3. Attachment Upload Failures
+
+**Problem**: Unable to upload files or attachments.
+
+**Solutions**:
+- Check file size limits (default is 100MB)
+- Verify file format is allowed
+- Ensure sufficient storage space
+- Try uploading smaller files first
+- Clear browser cache
+
+### 4. Search Not Working
+
+**Problem**: Search returns no results or incomplete results.
+
+**Solutions**:
+- Wait for index rebuild (can take time)
+- Use more specific search terms
+- Check search filters and settings
+- Verify you have permissions to view content
+- Try advanced search with CQL queries
+
+### 5. Macro Rendering Issues
+
+**Problem**: Macros not displaying correctly or showing errors.
+
+**Solutions**:
+- Check macro configuration settings
+- Verify all required parameters are filled
+- Update to latest Confluence version
+- Disable and re-enable the macro
+- Check for conflicting macros
+
+## Database Connection Issues
+
+### Symptoms
+- "Database connection failed" error
+- Slow performance across all pages
+- Unable to save changes
+
+### Solutions
+1. Check database server status
+2. Verify connection pool settings
+3. Review database logs for errors
+4. Ensure database has sufficient resources
+5. Check firewall rules
+
+## Integration Problems
+
+### JIRA Integration
+- Verify JIRA application link is active
+- Check OAuth tokens are valid
+- Ensure both systems can communicate
+- Review application link permissions
+
+### LDAP/AD Authentication
+- Verify LDAP server connectivity
+- Check user directory settings
+- Review user/group synchronization
+- Validate bind credentials
+
+## Performance Optimization
+
+### Best Practices
+1. Regularly archive old spaces
+2. Optimize database queries
+3. Enable caching where appropriate
+4. Monitor server resources
+5. Keep Confluence updated
+6. Use CDN for static content
+
+### Memory Settings
+- Allocate sufficient heap memory (min 2GB, recommended 4GB+)
+- Adjust garbage collection settings
+- Monitor memory usage patterns
+
+## Backup and Recovery
+
+### Regular Backups
+- Schedule automated daily backups
+- Store backups in secure location
+- Test restore procedures regularly
+- Document recovery process
+
+### Quick Recovery Steps
+1. Stop Confluence service
+2. Restore database from backup
+3. Restore attachment directory
+4. Verify configuration files
+5. Start Confluence service
+6. Validate data integrity
+
+## Getting Help
+
+### When to Contact Support
+- Data corruption issues
+- License problems
+- Critical security issues
+- Upgrade failures
+
+### Information to Provide
+- Confluence version
+- Server environment details
+- Error messages and logs
+- Steps to reproduce issue
+- Recent changes made
+
+## Additional Resources
+
+- Official Confluence Documentation
+- Community Support Forums
+- Knowledge Base Articles
+- Video Tutorials
+- Training Courses
+

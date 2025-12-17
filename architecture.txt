@@ -1,0 +1,45 @@
+                             ┌───────────────────────────────┐
+                             │        Frontend React         │
+                             │  (Vite / Next / CRA app)     │
+                             └───────────────┬──────────────┘
+                                             │
+                                             │ REST / HTTP API
+                                             │
+                             ┌───────────────▼───────────────┐
+                             │        Backend FastAPI        │
+                             │                               │
+                             │  ┌─────────────────────────┐  │
+                             │  │     Router Agent        │  │
+                             │  │  (LangGraph / LLM)     │  │
+                             │  └───────┬───────┬────────┘  │
+                             │          │       │            │
+             ┌───────────────▼───┐ ┌────▼─────┐ ┌──────────▼────────┐
+             │    RAG Agent       │ │ DB Agent │ │ Web Agent         │
+             │ (LangChain Chain)  │ │ (LangChain│ │ (LangChain + MCP)│
+             │ PDF/URLs/Docs)     │ │ chain)    │ │ fetch + parse)   │
+             └───────┬───────────┘ └────┬─────┘ └───────────┬───────┘
+                     │                  │                 │
+           ┌─────────▼─────────┐ ┌──────▼───────┐ ┌───────▼─────────┐
+           │ MCP Filesystem     │ │ MCP SQL      │ │ MCP Web / APIs  │
+           │ (PDFs, local docs)│ │ (DB queries) │ │ (external search)│
+           └─────────┬─────────┘ └──────────────┘ └────────────────┘
+                     │
+             ┌───────▼──────────┐
+             │  Qdrant VectorDB │
+             │  (embeddings)    │
+             └─────────┬────────┘
+                       │
+             ┌─────────▼────────┐
+             │ Fusion / Aggregator│
+             │ (merge results)    │
+             └─────────┬─────────┘
+                       │
+             ┌─────────▼─────────┐
+             │ Final Answer Agent │
+             │ (LLM synthesis)    │
+             └─────────┬─────────┘
+                       │
+             ┌─────────▼─────────┐
+             │   Response to      │
+             │   Frontend         │
+             └───────────────────┘

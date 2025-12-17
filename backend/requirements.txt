@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pydantic
+sqlalchemy
+httpx
+qdrant-client
+langgraph
+langchain
+langchain-core
+langchain-community
+langchain-openai
+pydantic-settings
+openai
+psycopg2-binary
+tenacity

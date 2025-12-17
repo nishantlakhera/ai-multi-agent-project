@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: multiagent-assistant
+data:
+  # Database Configuration
+  POSTGRES_HOST: "postgres"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "appdb"
+  POSTGRES_USER: "appuser"
+  POSTGRES_DSN: "postgresql://appuser:apppass@postgres:5432/appdb"
+  
+  # Qdrant Configuration
+  QDRANT_HOST: "qdrant"
+  QDRANT_PORT: "6333"
+  QDRANT_COLLECTION: "documents"
+  QDRANT_URL: "http://qdrant:6333"
+  QDRANT_COLLECTION_NAME: "documents"
+  
+  # MCP Service Configuration
+  MCP_SERVICE_URL: "http://mcp-service:8001"
+  
+  # LLM Configuration
+  LLM_PROVIDER: "ollama"
+  OLLAMA_BASE_URL: "http://host.minikube.internal:11434"
+  OLLAMA_MODEL: "llama3"
+  OLLAMA_EMBEDDING_MODEL: "nomic-embed-text"
+  
+  # Logging
+  LOG_LEVEL: "INFO"

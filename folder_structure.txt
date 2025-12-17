@@ -1,0 +1,102 @@
+project-root/
+│
+├── backend/                       # Main AI backend
+│   ├── main.py
+│   ├── config/
+│   │   ├── settings.py
+│   │   └── llm_config.py
+│   │
+│   ├── agents/
+│   │   ├── router_agent.py
+│   │   ├── rag_agent.py
+│   │   ├── db_agent.py
+│   │   ├── web_agent.py
+│   │   ├── fusion_agent.py
+│   │   └── final_answer_agent.py
+│   │
+│   ├── graphs/
+│   │   ├── multi_agent_graph.py
+│   │   ├── state_schema.py
+│   │
+│   ├── prompts/
+│   │   ├── router.txt
+│   │   ├── rag.txt
+│   │   ├── db.txt
+│   │   ├── web.txt
+│   │
+│   ├── services/
+│   │   ├── postgres_service.py
+│   │   ├── qdrant_service.py
+│   │   ├── embeddings_service.py
+│   │   └── memory_service.py
+│   │
+│   ├── models/
+│   │   ├── history_model.py
+│   │   └── user_model.py
+│   │
+│   ├── api/
+│   │   ├── routes.py
+│   │   └── schemas.py
+│   │
+│   └── utils/
+│       ├── logger.py
+│       ├── helpers.py
+│
+├── mcp_service/                   # MCP microservice
+│   ├── main.py                     # FastAPI entrypoint
+│   ├── tools/                      # Tools MCP can call
+│   │   ├── db_tool.py
+│   │   ├── web_tool.py
+│   │   ├── rag_tool.py
+│   │   └── __init__.py
+│   ├── planner/
+│   │   ├── mcp_planner.py          # Core MCP planning logic
+│   │   └── __init__.py
+│   ├── api/
+│   │   ├── routes.py               # /plan endpoint
+│   │   └── schemas.py
+│   └── utils/
+│       └── logger.py
+│
+├── frontend/
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── public/
+│   └── src/
+│       ├── main.jsx
+│       ├── App.jsx
+│       ├── components/
+│       ├── pages/
+│       ├── api/                    # Call backend / chat endpoint
+│       ├── context/
+│       └── styles/
+│
+├── minikube/
+│   ├── postgres/
+│   │   ├── postgres-deployment.yaml
+│   │   ├── postgres-service.yaml
+│   │   └── configmap.yaml
+│   ├── qdrant/
+│   │   ├── qdrant-deployment.yaml
+│   │   └── qdrant-service.yaml
+│   ├── mcp/
+│   │   ├── mcp-deployment.yaml
+│   │   └── mcp-service.yaml
+│   └── ingress/
+│       └── ingress.yaml
+│
+├── embeddings/
+│   ├── document_loader.py
+│   ├── ingestion_pipeline.py
+│   └── cleanup.py
+│
+├── docker/
+│   ├── backend.Dockerfile
+│   ├── mcp.Dockerfile
+│   ├── frontend.Dockerfile
+│   ├── postgres.Dockerfile
+│   └── qdrant.Dockerfile
+│
+├── .env
+├── README.md
+└── requirements.txt

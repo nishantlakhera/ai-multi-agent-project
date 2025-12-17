@@ -1,0 +1,215 @@
+# Application User Guide
+
+## Getting Started
+
+Welcome to our AI-powered multi-agent system! This guide will help you understand how to effectively use the application.
+
+## Features
+
+### 1. Intelligent Query Routing
+
+Our system automatically determines the best way to answer your question:
+
+- **Database Queries**: Questions about users, orders, analytics
+- **Document Search**: Questions about troubleshooting, documentation, processes
+- **Web Search**: Questions about current events, company information, product updates
+
+### 2. Natural Language Interface
+
+Simply type your question in plain English. Examples:
+
+- "How many users logged in today?"
+- "How do I fix Confluence page loading issues?"
+- "What are Tesla's upcoming products?"
+- "Show me recent orders"
+
+### 3. Multi-Source Responses
+
+For complex queries, the system can combine information from multiple sources:
+- Internal documents
+- Database analytics
+- Web research
+
+This provides comprehensive, well-rounded answers.
+
+## Common Use Cases
+
+### Database Analytics
+
+Ask questions like:
+- "How many total users do we have?"
+- "Show me orders from the last week"
+- "Who are our most active users?"
+- "What's the average order value?"
+- "How many users logged in today?"
+
+The system will:
+1. Generate appropriate SQL query
+2. Execute it against the database
+3. Present results in readable format
+
+### Documentation Queries
+
+Ask questions like:
+- "How do I troubleshoot Confluence issues?"
+- "What's the backup strategy?"
+- "How does authentication work?"
+- "What are the security best practices?"
+
+The system will:
+1. Search through internal documentation
+2. Find relevant sections
+3. Provide context-aware answers
+
+### Web Research
+
+Ask questions like:
+- "What are the latest Tesla announcements?"
+- "What is Apple planning to release?"
+- "What's the current stock price of Microsoft?"
+- "Who won the latest sports championship?"
+
+The system will:
+1. Search the web
+2. Fetch relevant content
+3. Summarize findings
+
+## Tips for Best Results
+
+### Be Specific
+❌ "Tell me about users"
+✅ "How many users created accounts this month?"
+
+### Use Natural Language
+❌ "SELECT COUNT(*) FROM users"
+✅ "How many users do we have?"
+
+### Ask Follow-up Questions
+You can ask related questions to get more details:
+- First: "Show me recent orders"
+- Then: "What's the total value of those orders?"
+
+### Combine Contexts
+You can ask questions that require multiple sources:
+"Compare our user growth with industry trends"
+
+## Understanding Responses
+
+### Source Indicators
+Responses will show which sources were used:
+- 🗄️ **[db]** - From database
+- 📄 **[doc]** - From documentation
+- 🌐 **[web]** - From web search
+
+### Debug Information
+In development mode, you can see:
+- Query routing decision
+- SQL generated (for DB queries)
+- Documents retrieved (for RAG)
+- Web search results
+
+## Limitations
+
+### Database Queries
+- Read-only access (no modifications)
+- Query timeout after 30 seconds
+- Limited to predefined tables
+
+### Documentation
+- Only searches indexed documents
+- Results depend on document quality
+- May miss very recent additions
+
+### Web Search
+- Results depend on internet connectivity
+- Information may not be real-time
+- External websites may be unavailable
+
+## Privacy and Security
+
+### Data Handling
+- Your queries are logged for improvement
+- No sensitive data is shared externally
+- Web searches use anonymized requests
+
+### Access Control
+- User authentication required
+- Role-based permissions enforced
+- Audit trail maintained
+
+## Troubleshooting
+
+### No Response
+- Check internet connection
+- Verify services are running
+- Try refreshing the page
+
+### Incorrect Answers
+- Rephrase your question
+- Be more specific
+- Try breaking into smaller questions
+
+### Slow Responses
+- Web searches may take longer
+- Complex queries need more time
+- Peak usage times may be slower
+
+## Keyboard Shortcuts
+
+- **Enter**: Send message
+- **Shift+Enter**: New line in message
+- **Ctrl+K**: Clear chat history
+
+## Support
+
+Need help?
+- Check the FAQ section
+- Contact support team
+- Report issues via feedback button
+
+## Best Practices
+
+1. **Start Simple**: Begin with straightforward questions
+2. **Be Patient**: Complex queries take time
+3. **Verify Important Info**: Cross-check critical information
+4. **Provide Feedback**: Help us improve with your input
+5. **Explore Capabilities**: Try different types of questions
+
+## Example Conversations
+
+### Example 1: User Analytics
+**You**: "How many users logged in today?"
+**AI**: Based on the database, 7 users logged in today. [db]
+
+**You**: "Show me their details"
+**AI**: Here are the users who logged in today:
+1. Jane Smith - last active 2 hours ago
+2. Alice Williams - last active now
+... [db]
+
+### Example 2: Troubleshooting
+**You**: "Why is Confluence slow?"
+**AI**: Based on the troubleshooting guide, Confluence can be slow due to:
+1. Database connection issues
+2. Insufficient memory
+3. Too many concurrent users
+... [doc]
+
+### Example 3: Web Research
+**You**: "What's Tesla's next product?"
+**AI**: According to recent announcements, Tesla is working on:
+1. Cybertruck production ramp-up
+2. Next-generation platform
+3. Optimus robot development
+... [web]
+
+## Updates and New Features
+
+Stay tuned for:
+- Voice input support
+- Multi-language support
+- Custom data source integration
+- Advanced analytics dashboards
+
+Last Updated: December 2025
+
