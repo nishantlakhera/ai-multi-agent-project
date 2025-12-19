@@ -3,7 +3,7 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # LLM Provider Configuration
-    LLM_PROVIDER: str = "openai"  # openai, openrouter, groq, gemini, ollama
+    LLM_PROVIDER: str = "ollama"  # openai, openrouter, groq, gemini, ollama
     LLM_BASE_URL: Optional[str] = None
     LLM_API_KEY: Optional[str] = None
     LLM_MODEL: Optional[str] = None

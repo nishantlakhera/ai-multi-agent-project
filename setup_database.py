@@ -48,6 +48,20 @@ def setup_database():
             sql_script = f.read()
         
         cursor.execute(sql_script)
+
+        # Ensure conversation history table exists
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS conversation_history (
+                id SERIAL PRIMARY KEY,
+                user_id VARCHAR(255) NOT NULL,
+                role VARCHAR(50) NOT NULL,
+                content TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                metadata JSONB DEFAULT '{}'::jsonb
+            )
+            """
+        )
         conn.commit()
         
         print("✅ Database tables created successfully")

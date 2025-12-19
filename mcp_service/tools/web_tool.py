@@ -14,7 +14,7 @@ def search_duckduckgo(query: str, max_results: int = 5) -> List[Dict[str, Any]]:
         }
         url = f"https://html.duckduckgo.com/html/?q={query}"
 
-        with httpx.Client(timeout=10) as client:
+        with httpx.Client(timeout=20.0) as client:
             response = client.get(url, headers=headers, follow_redirects=True)
             response.raise_for_status()
 
@@ -53,7 +53,7 @@ def fetch_url_content(url: str, max_length: int = 2000) -> str:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         }
-        with httpx.Client(timeout=15) as client:
+        with httpx.Client(timeout=20.0) as client:
             response = client.get(url, headers=headers, follow_redirects=True)
             response.raise_for_status()
 

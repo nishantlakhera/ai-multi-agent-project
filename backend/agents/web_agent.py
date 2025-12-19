@@ -24,15 +24,19 @@ def web_agent(state: GraphState) -> GraphState:
         return state
 
     try:
-        with httpx.Client(timeout=30) as http_client:
+        # Web searches can take time - increase timeout to 60s
+        with httpx.Client(timeout=60.0) as http_client:
             plan_resp = http_client.post(
                 f"{settings.MCP_SERVICE_URL}/plan",
                 json={"plan": plan_str},
             )
             plan_resp.raise_for_status()
             data = plan_resp.json()
+    except httpx.ReadTimeout:
+        logger.warning(f"[web_agent] MCP call timed out after 60s - web searches may be slow")
+        data = {"results": [], "error": "timed out"}
     except Exception as e:
-        logger.exception(f"[web_agent] MCP call failed: {e}")
+        logger.error(f"[web_agent] MCP call failed: {e}")
         data = {"results": [], "error": str(e)}
 
     state["web_results"] = data.get("results", [])  # type: ignore

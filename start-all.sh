@@ -85,14 +85,16 @@ log_success "Kubernetes cluster is accessible"
 #############################################################################
 # STEP 3: Check/Create Namespace
 #############################################################################
+NAMESPACE="multiagent-assistant"
+
 log_info "Step 3: Checking namespace..."
 
-if ! kubectl get namespace multiagent-assistant &> /dev/null; then
-    log_warning "Namespace 'multiagent-assistant' does not exist. Creating..."
-    kubectl create namespace multiagent-assistant
+if ! kubectl get namespace "$NAMESPACE" &> /dev/null; then
+    log_warning "Namespace '$NAMESPACE' does not exist. Creating..."
+    kubectl create namespace "$NAMESPACE"
     log_success "Namespace created"
 else
-    log_success "Namespace 'multiagent-assistant' exists"
+    log_success "Namespace '$NAMESPACE' exists"
 fi
 
 #############################################################################
@@ -101,7 +103,7 @@ fi
 log_info "Step 4: Checking Docker images..."
 
 # Configure Docker to use Minikube's Docker daemon
-eval $(minikube docker-env)
+eval "$(minikube docker-env)"
 
 # Check if images exist
 NEED_BUILD=false
@@ -118,14 +120,14 @@ fi
 
 if [ "$NEED_BUILD" = true ]; then
     log_info "Building Docker images..."
-    
+
     log_info "Building backend image..."
     docker build -f docker/backend.Dockerfile -t multiagent-backend:latest . || {
         log_error "Failed to build backend image"
         exit 1
     }
     log_success "Backend image built"
-    
+
     log_info "Building MCP service image..."
     docker build -f docker/mcp.Dockerfile -t multiagent-mcp:latest . || {
         log_error "Failed to build MCP image"
@@ -141,33 +143,27 @@ fi
 #############################################################################
 log_info "Step 5: Deploying Kubernetes services..."
 
-# Check if services are already deployed
-SERVICES_EXIST=false
-if kubectl get deployment backend -n multiagent-assistant &> /dev/null; then
-    SERVICES_EXIST=true
+# Check if services are already deployed and healthy; if anything is unhealthy, redeploy everything
+if kubectl get deployment backend -n "$NAMESPACE" &> /dev/null; then
     log_warning "Services already deployed. Checking status..."
-    
-    # Check if all pods are running
-    NOT_RUNNING=$(kubectl get pods -n multiagent-assistant --field-selector=status.phase!=Running --no-headers 2>/dev/null | wc -l)
-    
-    if [ $NOT_RUNNING -gt 0 ]; then
+
+    NOT_RUNNING=$(kubectl get pods -n "$NAMESPACE" --field-selector=status.phase!=Running --no-headers 2>/dev/null | wc -l || echo 0)
+
+    if [ "$NOT_RUNNING" -gt 0 ]; then
         log_warning "Some pods are not running. Redeploying..."
-        kubectl delete -f minikube/ --ignore-not-found=true
-        SERVICES_EXIST=false
+        kubectl delete -n "$NAMESPACE" -f minikube/ --ignore-not-found=true
     fi
 fi
 
-if [ "$SERVICES_EXIST" = false ]; then
-    log_info "Deploying all services..."
-    
-    # Deploy in order: data layer first, then application layer
-    kubectl apply -f minikube/postgres/ || log_error "Failed to deploy PostgreSQL"
-    kubectl apply -f minikube/qdrant/ || log_error "Failed to deploy Qdrant"
-    kubectl apply -f minikube/mcp/ || log_error "Failed to deploy MCP"
-    kubectl apply -f minikube/backend/ || log_error "Failed to deploy Backend"
-    
-    log_success "Kubernetes manifests applied"
-fi
+log_info "Applying all services (idempotent)..."
+
+# Deploy in order: data layer first, then application layer
+kubectl apply -n "$NAMESPACE" -f minikube/postgres/ || { log_error "Failed to deploy PostgreSQL"; exit 1; }
+kubectl apply -n "$NAMESPACE" -f minikube/qdrant/   || { log_error "Failed to deploy Qdrant"; exit 1; }
+kubectl apply -n "$NAMESPACE" -f minikube/mcp/      || { log_error "Failed to deploy MCP"; exit 1; }
+kubectl apply -n "$NAMESPACE" -f minikube/backend/  || { log_error "Failed to deploy Backend"; exit 1; }
+
+log_success "Kubernetes manifests applied"
 
 #############################################################################
 # STEP 6: Wait for Pods to be Ready
@@ -175,33 +171,33 @@ fi
 log_info "Step 6: Waiting for pods to be ready..."
 
 log_info "Waiting for PostgreSQL..."
-kubectl wait --for=condition=ready pod -l app=postgres -n multiagent-assistant --timeout=120s || {
+kubectl wait --for=condition=ready pod -l app=postgres -n "$NAMESPACE" --timeout=120s || {
     log_error "PostgreSQL pod failed to start"
-    kubectl logs -n multiagent-assistant -l app=postgres --tail=20
+    kubectl logs -n "$NAMESPACE" -l app=postgres --tail=20 || true
     exit 1
 }
 log_success "PostgreSQL is ready"
 
 log_info "Waiting for Qdrant..."
-kubectl wait --for=condition=ready pod -l app=qdrant -n multiagent-assistant --timeout=120s || {
+kubectl wait --for=condition=ready pod -l app=qdrant -n "$NAMESPACE" --timeout=120s || {
     log_error "Qdrant pod failed to start"
-    kubectl logs -n multiagent-assistant -l app=qdrant --tail=20
+    kubectl logs -n "$NAMESPACE" -l app=qdrant --tail=20 || true
     exit 1
 }
 log_success "Qdrant is ready"
 
 log_info "Waiting for MCP service..."
-kubectl wait --for=condition=ready pod -l app=mcp-service -n multiagent-assistant --timeout=120s || {
+kubectl wait --for=condition=ready pod -l app=mcp-service -n "$NAMESPACE" --timeout=120s || {
     log_error "MCP service pod failed to start"
-    kubectl logs -n multiagent-assistant -l app=mcp-service --tail=20
+    kubectl logs -n "$NAMESPACE" -l app=mcp-service --tail=20 || true
     exit 1
 }
 log_success "MCP service is ready"
 
 log_info "Waiting for Backend..."
-kubectl wait --for=condition=ready pod -l app=backend -n multiagent-assistant --timeout=120s || {
+kubectl wait --for=condition=ready pod -l app=backend -n "$NAMESPACE" --timeout=120s || {
     log_error "Backend pod failed to start"
-    kubectl logs -n multiagent-assistant -l app=backend --tail=20
+    kubectl logs -n "$NAMESPACE" -l app=backend --tail=20 || true
     exit 1
 }
 log_success "Backend is ready"
@@ -213,7 +209,7 @@ log_info "Step 7: Checking Ollama service..."
 
 if ! curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
     log_warning "Ollama is not running. Starting Ollama..."
-    
+
     # Try to start Ollama as a service
     if command -v brew &> /dev/null; then
         brew services start ollama
@@ -228,20 +224,20 @@ fi
 # Verify Ollama is accessible
 if curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
     log_success "Ollama is running"
-    
+
     # Check required models
-    MODELS=$(curl -s http://localhost:11434/api/tags | grep -o '"name":"[^"]*"' | cut -d'"' -f4)
-    
+    MODELS=$(curl -s http://localhost:11434/api/tags | grep -o '"name":"[^"]*"' | cut -d'"' -f4 || true)
+
     if ! echo "$MODELS" | grep -q "llama3"; then
         log_warning "llama3 model not found. Pulling..."
-        ollama pull llama3
+        ollama pull llama3 || true
     fi
-    
+
     if ! echo "$MODELS" | grep -q "nomic-embed-text"; then
         log_warning "nomic-embed-text model not found. Pulling..."
-        ollama pull nomic-embed-text
+        ollama pull nomic-embed-text || true
     fi
-    
+
     log_success "Required Ollama models are available"
 else
     log_error "Ollama failed to start"
@@ -266,19 +262,19 @@ mkdir -p logs
 
 # Start port forwarding
 log_info "Port forwarding PostgreSQL..."
-kubectl port-forward -n multiagent-assistant svc/postgres 5432:5432 > logs/postgres-pf.log 2>&1 &
+kubectl port-forward -n "$NAMESPACE" svc/postgres 5432:5432 > logs/postgres-pf.log 2>&1 &
 sleep 1
 
 log_info "Port forwarding Qdrant..."
-kubectl port-forward -n multiagent-assistant svc/qdrant 6333:6333 > logs/qdrant-pf.log 2>&1 &
+kubectl port-forward -n "$NAMESPACE" svc/qdrant 6333:6333 > logs/qdrant-pf.log 2>&1 &
 sleep 1
 
 log_info "Port forwarding Backend..."
-kubectl port-forward -n multiagent-assistant svc/backend 8000:8000 > logs/backend-pf.log 2>&1 &
+kubectl port-forward -n "$NAMESPACE" svc/backend 8000:8000 > logs/backend-pf.log 2>&1 &
 sleep 1
 
 log_info "Port forwarding MCP Service..."
-kubectl port-forward -n multiagent-assistant svc/mcp-service 8001:8001 > logs/mcp-pf.log 2>&1 &
+kubectl port-forward -n "$NAMESPACE" svc/mcp-service 8001:8001 > logs/mcp-pf.log 2>&1 &
 sleep 3
 
 log_success "Port forwarding established"
@@ -293,7 +289,7 @@ if curl -s http://localhost:8000/health > /dev/null 2>&1; then
     log_success "Backend is healthy (http://localhost:8000)"
 else
     log_error "Backend health check failed"
-    log_error "Check logs: kubectl logs -n multiagent-assistant -l app=backend"
+    log_error "Check logs: kubectl logs -n $NAMESPACE -l app=backend"
 fi
 
 # Test MCP Service
@@ -301,7 +297,7 @@ if curl -s http://localhost:8001/health > /dev/null 2>&1; then
     log_success "MCP Service is healthy (http://localhost:8001)"
 else
     log_error "MCP Service health check failed"
-    log_error "Check logs: kubectl logs -n multiagent-assistant -l app=mcp-service"
+    log_error "Check logs: kubectl logs -n $NAMESPACE -l app=mcp-service"
 fi
 
 #############################################################################
@@ -309,7 +305,7 @@ fi
 #############################################################################
 log_info "Step 10: Checking frontend dependencies..."
 
-cd frontend
+cd frontend || { log_error "Frontend directory not found"; exit 1; }
 
 if [ ! -d "node_modules" ]; then
     log_warning "Frontend dependencies not found. Installing..."
@@ -350,24 +346,55 @@ else
 fi
 
 #############################################################################
-# STEP 12: Ingest Documents (if Qdrant is empty)
+# STEP 12: Ingest Documents (if Qdrant is empty)  -- robust check
 #############################################################################
 log_info "Step 12: Checking document ingestion..."
 
-# Check if Qdrant has documents
-COLLECTION_INFO=$(curl -s http://localhost:6333/collections/documents 2>/dev/null || echo "")
+COLLECTION_URL="http://localhost:6333/collections/documents"
 
-if echo "$COLLECTION_INFO" | grep -q '"points_count":0' || [ -z "$COLLECTION_INFO" ]; then
-    log_warning "Qdrant collection is empty. Ingesting documents..."
-    
-    export PYTHONPATH=$PROJECT_DIR:$PROJECT_DIR/backend
+# request body + http code
+HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" "$COLLECTION_URL" 2>/dev/null || echo -e "\n000")
+HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '$d')      # all but last line
+HTTP_CODE=$(echo "$HTTP_RESPONSE" | tail -n1)     # last line is HTTP status
+
+# parse points_count using python3 (walks JSON to find points_count)
+POINTS_COUNT=$(echo "$HTTP_BODY" | python3 - <<'PY'
+import sys, json
+s = sys.stdin.read()
+try:
+    obj = json.loads(s)
+except Exception:
+    print("-1")
+    sys.exit(0)
+def find_points(o):
+    if isinstance(o, dict):
+        if "points_count" in o and isinstance(o["points_count"], int):
+            return o["points_count"]
+        for v in o.values():
+            r = find_points(v)
+            if r is not None:
+                return r
+    elif isinstance(o, list):
+        for v in o:
+            r = find_points(v)
+            if r is not None:
+                return r
+    return None
+res = find_points(obj)
+print(res if res is not None else -1)
+PY
+)
+
+# Decide whether to ingest
+if [ "$HTTP_CODE" != "200" ] || [ "$POINTS_COUNT" = "-1" ] || [ "$POINTS_COUNT" = "0" ]; then
+    log_warning "Qdrant collection missing or empty (http=$HTTP_CODE points_count=$POINTS_COUNT). Ingesting documents..."
+    export PYTHONPATH="$PROJECT_DIR:$PROJECT_DIR/backend"
     python3 embeddings/ingestion_pipeline.py || {
         log_warning "Document ingestion failed (not critical)"
     }
-    
     log_success "Documents ingested"
 else
-    log_success "Documents already exist in Qdrant"
+    log_success "Documents already exist in Qdrant (points_count=$POINTS_COUNT)"
 fi
 
 #############################################################################
@@ -389,14 +416,14 @@ echo "   Qdrant:            http://localhost:6333"
 echo "   Ollama:            http://localhost:11434"
 echo ""
 echo "🔍 Kubernetes Pods:"
-kubectl get pods -n multiagent-assistant
+kubectl get pods -n "$NAMESPACE"
 echo ""
 echo "📁 Logs:"
 echo "   Frontend:          tail -f logs/frontend.log"
-echo "   Backend:           kubectl logs -n multiagent-assistant -l app=backend -f"
-echo "   MCP Service:       kubectl logs -n multiagent-assistant -l app=mcp-service -f"
-echo "   PostgreSQL:        kubectl logs -n multiagent-assistant -l app=postgres -f"
-echo "   Qdrant:            kubectl logs -n multiagent-assistant -l app=qdrant -f"
+echo "   Backend:           kubectl logs -n $NAMESPACE -l app=backend -f"
+echo "   MCP Service:       kubectl logs -n $NAMESPACE -l app=mcp-service -f"
+echo "   PostgreSQL:        kubectl logs -n $NAMESPACE -l app=postgres -f"
+echo "   Qdrant:            kubectl logs -n $NAMESPACE -l app=qdrant -f"
 echo ""
 echo "🛑 To stop all services:"
 echo "   ./stop-all.sh"

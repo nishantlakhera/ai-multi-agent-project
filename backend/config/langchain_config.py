@@ -23,9 +23,14 @@ def get_langchain_llm(temperature: float = 0.7, max_tokens: Optional[int] = None
     if provider == "ollama":
         # Ollama's OpenAI-compatible endpoint is at /v1
         base = (settings.LLM_BASE_URL or settings.OLLAMA_BASE_URL).rstrip('/')
+        # Remove trailing /v1 if already present to avoid duplication
+        if base.endswith('/v1'):
+            base_url = base
+        else:
+            base_url = f"{base}/v1"
         return ChatOpenAI(
             model=settings.LLM_MODEL or settings.OLLAMA_MODEL,
-            openai_api_base=f"{base}/v1",
+            base_url=base_url,
             api_key="ollama",  # Ollama doesn't need a real key
             temperature=temperature,
             max_tokens=max_tokens,

@@ -13,3 +13,4 @@ pydantic-settings
 openai
 psycopg2-binary
 tenacity
+python-dotenv
