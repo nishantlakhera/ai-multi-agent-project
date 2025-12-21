@@ -53,11 +53,10 @@ This document provides comprehensive information about our multi-tier applicatio
 - Health checks every 30 seconds
 - Circuit breakers for external services
 
-### Monitoring and Observability
-- **Metrics**: Prometheus + Grafana
-- **Logs**: ELK Stack (Elasticsearch, Logstash, Kibana)
-- **Tracing**: Jaeger for distributed tracing
-- **Alerts**: PagerDuty integration
+### Monitoring
+- **Logs**: Application logging via Python logging module
+- **Health Checks**: HTTP health endpoints on all services
+- **Alerts**: Critical error notifications
 
 ## Security Practices
 

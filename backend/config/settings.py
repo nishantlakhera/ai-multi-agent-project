@@ -38,6 +38,11 @@ class Settings(BaseSettings):
 
     MCP_SERVICE_URL: str = "http://localhost:8001"
 
+    # Redis (optional cache)
+    REDIS_URL: Optional[str] = None
+    REDIS_HISTORY_TTL_SECONDS: int = 3600
+    REDIS_HISTORY_MAX_ITEMS: int = 50
+
     ENV: str = "dev"
 
     class Config:

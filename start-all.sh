@@ -160,8 +160,10 @@ log_info "Applying all services (idempotent)..."
 # Deploy in order: data layer first, then application layer
 kubectl apply -n "$NAMESPACE" -f minikube/postgres/ || { log_error "Failed to deploy PostgreSQL"; exit 1; }
 kubectl apply -n "$NAMESPACE" -f minikube/qdrant/   || { log_error "Failed to deploy Qdrant"; exit 1; }
+kubectl apply -n "$NAMESPACE" -f minikube/redis/    || { log_error "Failed to deploy Redis"; exit 1; }
 kubectl apply -n "$NAMESPACE" -f minikube/mcp/      || { log_error "Failed to deploy MCP"; exit 1; }
 kubectl apply -n "$NAMESPACE" -f minikube/backend/  || { log_error "Failed to deploy Backend"; exit 1; }
+kubectl apply -n "$NAMESPACE" -f minikube/apisix/   || { log_error "Failed to deploy APISIX"; exit 1; }
 
 log_success "Kubernetes manifests applied"
 
@@ -186,6 +188,14 @@ kubectl wait --for=condition=ready pod -l app=qdrant -n "$NAMESPACE" --timeout=1
 }
 log_success "Qdrant is ready"
 
+log_info "Waiting for Redis..."
+kubectl wait --for=condition=ready pod -l app=redis -n "$NAMESPACE" --timeout=120s || {
+    log_error "Redis pod failed to start"
+    kubectl logs -n "$NAMESPACE" -l app=redis --tail=20 || true
+    exit 1
+}
+log_success "Redis is ready"
+
 log_info "Waiting for MCP service..."
 kubectl wait --for=condition=ready pod -l app=mcp-service -n "$NAMESPACE" --timeout=120s || {
     log_error "MCP service pod failed to start"
@@ -201,6 +211,16 @@ kubectl wait --for=condition=ready pod -l app=backend -n "$NAMESPACE" --timeout=
     exit 1
 }
 log_success "Backend is ready"
+
+log_info "Waiting for APISIX..."
+kubectl wait --for=condition=ready pod -l app=apisix -n "$NAMESPACE" --timeout=120s || {
+    log_error "APISIX pod failed to start"
+    kubectl logs -n "$NAMESPACE" -l app=apisix --tail=20 || true
+    exit 1
+}
+log_success "APISIX is ready"
+
+log_info "All core services deployed successfully"
 
 #############################################################################
 # STEP 7: Start Ollama (if not running)
@@ -254,6 +274,8 @@ pkill -f "kubectl port-forward.*backend" 2>/dev/null || true
 pkill -f "kubectl port-forward.*mcp" 2>/dev/null || true
 pkill -f "kubectl port-forward.*postgres" 2>/dev/null || true
 pkill -f "kubectl port-forward.*qdrant" 2>/dev/null || true
+pkill -f "kubectl port-forward.*redis" 2>/dev/null || true
+pkill -f "kubectl port-forward.*apisix" 2>/dev/null || true
 
 sleep 2
 
@@ -269,6 +291,10 @@ log_info "Port forwarding Qdrant..."
 kubectl port-forward -n "$NAMESPACE" svc/qdrant 6333:6333 > logs/qdrant-pf.log 2>&1 &
 sleep 1
 
+log_info "Port forwarding Redis..."
+kubectl port-forward -n "$NAMESPACE" svc/redis 6379:6379 > logs/redis-pf.log 2>&1 &
+sleep 1
+
 log_info "Port forwarding Backend..."
 kubectl port-forward -n "$NAMESPACE" svc/backend 8000:8000 > logs/backend-pf.log 2>&1 &
 sleep 1
@@ -276,6 +302,10 @@ sleep 1
 log_info "Port forwarding MCP Service..."
 kubectl port-forward -n "$NAMESPACE" svc/mcp-service 8001:8001 > logs/mcp-pf.log 2>&1 &
 sleep 3
+
+log_info "Port forwarding APISIX..."
+kubectl port-forward -n "$NAMESPACE" svc/apisix 9080:9080 > logs/apisix-pf.log 2>&1 &
+sleep 1
 
 log_success "Port forwarding established"
 
@@ -299,6 +329,17 @@ else
     log_error "MCP Service health check failed"
     log_error "Check logs: kubectl logs -n $NAMESPACE -l app=mcp-service"
 fi
+
+# Test APISIX Gateway (any HTTP response is considered healthy)
+APISIX_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9080/ || echo "000")
+if [ "$APISIX_STATUS" != "000" ]; then
+    log_success "APISIX is reachable (http://localhost:9080)"
+else
+    log_error "APISIX is not reachable"
+    log_error "Check logs: kubectl logs -n $NAMESPACE -l app=apisix"
+fi
+
+
 
 #############################################################################
 # STEP 10: Install Frontend Dependencies (if needed)
@@ -407,12 +448,14 @@ echo "╚═══════════════════════�
 echo ""
 echo "📊 Service URLs:"
 echo "   Frontend:          http://localhost:5173"
+echo "   API Gateway:       http://localhost:9080"
 echo "   Backend API:       http://localhost:8000"
 echo "   Backend API Docs:  http://localhost:8000/docs"
 echo "   MCP Service:       http://localhost:8001"
 echo "   MCP Service Docs:  http://localhost:8001/docs"
 echo "   PostgreSQL:        localhost:5432"
 echo "   Qdrant:            http://localhost:6333"
+echo "   Redis:             redis://localhost:6379"
 echo "   Ollama:            http://localhost:11434"
 echo ""
 echo "🔍 Kubernetes Pods:"
@@ -422,6 +465,7 @@ echo "📁 Logs:"
 echo "   Frontend:          tail -f logs/frontend.log"
 echo "   Backend:           kubectl logs -n $NAMESPACE -l app=backend -f"
 echo "   MCP Service:       kubectl logs -n $NAMESPACE -l app=mcp-service -f"
+echo "   APISIX:            kubectl logs -n $NAMESPACE -l app=apisix -f"
 echo "   PostgreSQL:        kubectl logs -n $NAMESPACE -l app=postgres -f"
 echo "   Qdrant:            kubectl logs -n $NAMESPACE -l app=qdrant -f"
 echo ""

@@ -20,6 +20,11 @@ data:
   
   # MCP Service Configuration
   MCP_SERVICE_URL: "http://mcp-service:8001"
+
+  # Redis Cache
+  REDIS_URL: "redis://redis:6379/0"
+  REDIS_HISTORY_TTL_SECONDS: "3600"
+  REDIS_HISTORY_MAX_ITEMS: "50"
   
   # LLM Configuration
   LLM_PROVIDER: "ollama"

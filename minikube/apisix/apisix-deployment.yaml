@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apisix
+  namespace: multiagent-assistant
+  labels:
+    app: apisix
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apisix
+  template:
+    metadata:
+      labels:
+        app: apisix
+    spec:
+      containers:
+      - name: apisix
+        image: apache/apisix:3.8.0-debian
+        ports:
+        - containerPort: 9080
+          name: http
+        volumeMounts:
+        - name: apisix-config
+          mountPath: /usr/local/apisix/conf/config.yaml
+          subPath: config.yaml
+        - name: apisix-config
+          mountPath: /usr/local/apisix/conf/apisix.yaml
+          subPath: apisix.yaml
+        livenessProbe:
+          tcpSocket:
+            port: 9080
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 9080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: apisix-config
+        configMap:
+          name: apisix-config

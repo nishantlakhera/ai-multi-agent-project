@@ -1,10 +1,11 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from config.settings import settings
 from utils.logger import logger
 import json
 from datetime import datetime, timedelta
+from redis import Redis
 
 engine = create_engine(settings.POSTGRES_DSN, future=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
@@ -20,8 +21,59 @@ class MemoryService:
     """
     
     def __init__(self):
+        self.redis = self._init_redis()
+        self.redis_ttl = settings.REDIS_HISTORY_TTL_SECONDS
+        self.redis_max_items = settings.REDIS_HISTORY_MAX_ITEMS
         self._ensure_table_exists()
-    
+
+    def _init_redis(self) -> Optional[Redis]:
+        if not settings.REDIS_URL:
+            return None
+        try:
+            client = Redis.from_url(settings.REDIS_URL, decode_responses=True)
+            client.ping()
+            logger.info("[MemoryService] Redis cache enabled")
+            return client
+        except Exception as e:
+            logger.warning(f"[MemoryService] Redis unavailable, cache disabled: {e}")
+            return None
+
+    def _redis_key(self, user_id: str) -> str:
+        return f"conversation_history:{user_id}"
+
+    def _cache_append(self, user_id: str, role: str, content: str):
+        if not self.redis:
+            return
+        try:
+            key = self._redis_key(user_id)
+            payload = {
+                "role": role,
+                "content": content,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            self.redis.rpush(key, json.dumps(payload))
+            if self.redis_max_items > 0:
+                self.redis.ltrim(key, -self.redis_max_items, -1)
+            if self.redis_ttl > 0:
+                self.redis.expire(key, self.redis_ttl)
+        except Exception as e:
+            logger.warning(f"[MemoryService] Redis cache append failed: {e}")
+
+    def _cache_set(self, user_id: str, history: List[Dict[str, Any]]):
+        if not self.redis:
+            return
+        try:
+            key = self._redis_key(user_id)
+            self.redis.delete(key)
+            if not history:
+                return
+            for item in history:
+                self.redis.rpush(key, json.dumps(item))
+            if self.redis_ttl > 0:
+                self.redis.expire(key, self.redis_ttl)
+        except Exception as e:
+            logger.warning(f"[MemoryService] Redis cache set failed: {e}")
+
     def _ensure_table_exists(self):
         """Create conversation_history table if it doesn't exist"""
         create_table_sql = """
@@ -60,11 +112,21 @@ class MemoryService:
                     "metadata": json.dumps(metadata or {})
                 })
                 session.commit()
+            self._cache_append(user_id, role, content)
         except Exception as e:
             logger.error(f"[MemoryService] Error adding message: {e}")
 
     def get_history(self, user_id: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Get last N messages from user's conversation history"""
+        if self.redis:
+            try:
+                key = self._redis_key(user_id)
+                cached = self.redis.lrange(key, 0, -1)
+                if cached:
+                    history = [json.loads(item) for item in cached]
+                    return history[-limit:] if limit else history
+            except Exception as e:
+                logger.warning(f"[MemoryService] Redis cache read failed: {e}")
         try:
             query_sql = """
             SELECT role, content, created_at, metadata
@@ -88,6 +150,7 @@ class MemoryService:
                         "content": row[1],
                         "timestamp": row[2].isoformat() if row[2] else None
                     })
+                self._cache_set(user_id, history[-self.redis_max_items:] if self.redis_max_items > 0 else history)
                 return history
         except Exception as e:
             logger.error(f"[MemoryService] Error getting history: {e}")
@@ -101,6 +164,11 @@ class MemoryService:
                 session.execute(text(delete_sql), {"user_id": user_id})
                 session.commit()
                 logger.info(f"[MemoryService] Cleared history for user {user_id}")
+            if self.redis:
+                try:
+                    self.redis.delete(self._redis_key(user_id))
+                except Exception as e:
+                    logger.warning(f"[MemoryService] Redis cache delete failed: {e}")
         except Exception as e:
             logger.error(f"[MemoryService] Error clearing history: {e}")
     
