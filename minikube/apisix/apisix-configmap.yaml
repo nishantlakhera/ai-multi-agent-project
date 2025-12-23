@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apisix-config
+  namespace: multiagent-assistant
+data:
+  config.yaml: |
+    apisix:
+      node_listen: 9080
+      enable_admin: false
+      enable_dev_mode: false
+      config_center: yaml
+    deployment:
+      role: data_plane
+      role_data_plane:
+        config_provider: yaml
+    nginx_config:
+      error_log: /dev/stderr
+      access_log: /dev/stdout
+  apisix.yaml: |
+    routes:
+      - id: 1
+        uri: /api/health
+        plugins:
+          proxy-rewrite:
+            uri: /health
+        upstream:
+          type: roundrobin
+          nodes:
+            "backend:8000": 1
+      - id: 2
+        uris:
+          - /api/*
+        upstream:
+          type: roundrobin
+          nodes:
+            "backend:8000": 1
+      - id: 3
+        uris:
+          - /mcp/*
+        plugins:
+          proxy-rewrite:
+            regex_uri:
+              - "^/mcp/(.*)"
+              - "/$1"
+        upstream:
+          type: roundrobin
+          nodes:
+            "mcp-service:8001": 1
+      - id: 4
+        uri: /metrics
+        upstream:
+          type: roundrobin
+          nodes:
+            "backend:8000": 1
+    #END

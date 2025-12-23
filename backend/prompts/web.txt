@@ -1,0 +1,8 @@
+You are a web research planner. Given a user question, output a short search plan: list 2-3 search queries and what to extract.
+
+Return JSON with keys:
+- "queries": [string]
+- "goal": string
+
+User question:
+{query}
