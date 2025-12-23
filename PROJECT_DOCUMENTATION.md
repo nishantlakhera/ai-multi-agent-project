@@ -130,43 +130,49 @@ An **intelligent conversational AI assistant** that combines multiple specialize
                               │
                    Persistent + Cache + Vector + AI
 ```
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │              LangGraph Workflow                           │  │
-│  │                                                            │  │
-│  │  ┌──────────┐                                             │  │
-│  │  │  Router  │──> LangChain → Ollama (llama3)             │  │
-│  │  │  Agent   │──> Route Decision (general/rag/db/web/multi)│  │
-│  │  └────┬─────┘                                             │  │
-│  │       │                                                   │  │
-│  │       ├─> General Agent ──> LangChain → Ollama (llama3)  │  │
-│  │       │                                                   │  │
-│  │       ├─> RAG Agent ────┬──> LangChain → Ollama (llama3) │  │
-│  │       │                 └──> MCP Service ─> Qdrant DB    │  │
-│  │       │                                                   │  │
-│  │       ├─> DB Agent ─────┬──> LangChain → Ollama (llama3) │  │
-│  │       │                 └──> MCP Service ─> PostgreSQL   │  │
-│  │       │                                                   │  │
-│  │       ├─> Web Agent ────┬──> LangChain → Ollama (llama3) │  │
-│  │       │                 └──> MCP Service ─> DuckDuckGo   │  │
-│  │       │                                                   │  │
-│  │       └─> Multi ────────> All Three Agents (parallel)    │  │
-│  │                                  │                        │  │
-│  │                                  ▼                        │  │
-│  │                   ┌────────────────────────────┐         │  │
-│  │                   │ Fusion Agent               │         │  │
-│  │                   │ LangChain → Ollama (llama3)│         │  │
-│  │                   └──────────┬─────────────────┘         │  │
-│  │                              │                            │  │
-│  │                              ▼                            │  │
-│  │                   ┌────────────────────────────┐         │  │
-│  │                   │ Final Answer Agent         │         │  │
-│  │                   │ (Uses conversation history)│         │  │
-│  │                   │ LangChain → Ollama (llama3)│         │  │
-│  │                   └────────────────────────────┘         │  │
-│  └──────────────────────────────────────────────────────────┘  │
-└───────┬─────────────────────────────────────────────────────────┘
-        │
-        ▼
+
+**LangGraph Workflow:**
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                    LangGraph Workflow                          │
+│                                                                │
+│  ┌──────────┐                                                 │
+│  │  Router  │──> LangChain → Ollama (llama3)                 │
+│  │  Agent   │──> Route Decision (general/rag/db/web/multi)   │
+│  └────┬─────┘                                                 │
+│       │                                                       │
+│       ├─> General Agent ──> LangChain → Ollama (llama3)      │
+│       │                                                       │
+│       ├─> RAG Agent ────┬──> LangChain → Ollama (llama3)     │
+│       │                 └──> MCP Service ─> Qdrant DB        │
+│       │                                                       │
+│       ├─> DB Agent ─────┬──> LangChain → Ollama (llama3)     │
+│       │                 └──> MCP Service ─> PostgreSQL       │
+│       │                                                       │
+│       ├─> Web Agent ────┬──> LangChain → Ollama (llama3)     │
+│       │                 └──> MCP Service ─> DuckDuckGo       │
+│       │                                                       │
+│       └─> Multi ────────> All Three Agents (parallel)        │
+│                              │                                │
+│                              ▼                                │
+│               ┌────────────────────────────┐                 │
+│               │ Fusion Agent               │                 │
+│               │ LangChain → Ollama (llama3)│                 │
+│               └──────────┬─────────────────┘                 │
+│                          │                                    │
+│                          ▼                                    │
+│               ┌────────────────────────────┐                 │
+│               │ Final Answer Agent         │                 │
+│               │ (Uses conversation history)│                 │
+│               │ LangChain → Ollama (llama3)│                 │
+│               └────────────────────────────┘                 │
+└────────────────────────────────────────────────────────────────┘
+```
+
+**Memory Service (Conversation History):**
+
+```
 ┌───────────────────────────────────────────────────────────────┐
 │              Memory Service (Conversation History)             │
 │                      PostgreSQL Storage                        │
@@ -177,8 +183,11 @@ An **intelligent conversational AI assistant** that combines multiple specialize
 │  • Auto-cleanup after 30 days                                 │
 │  • Indexed for fast retrieval                                 │
 └───────────────────────────────────────────────────────────────┘
+```
 
+**MCP Service Architecture:**
 
+```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    MCP Service (Port 8001)                       │
 │              Model Context Protocol Tools                        │
@@ -202,7 +211,11 @@ An **intelligent conversational AI assistant** that combines multiple specialize
     - nomic-embed-text - Orders table        - BeautifulSoup
     - Semantic search  - Conv. history       - Live web data
                        - Context-aware
+```
 
+**Ollama Service:**
+
+```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Ollama Service                                │
 │                 http://localhost:11434                          │
