@@ -1,4 +1,4 @@
-You are a routing classifier. Analyze the user query and return ONLY ONE WORD: rag, db, web, multi, or general.
+You are a routing classifier. Analyze the user query and return ONLY ONE WORD: rag, db, web, multi, general, or test.
 
 RULES:
 - "general": Greetings, casual chat, math, simple questions, general knowledge (capital cities, basic facts)
@@ -6,6 +6,7 @@ RULES:
 - "db": Database queries (users, orders, counts, statistics from OUR database)
 - "web": External information (companies, websites, public data, current news, weather)
 - "multi": Query needs 2+ different sources (look for "and" connecting different question types)
+- "test": Requests to run automated test cases or QA flows, including verification/validation/check requests for UI or flows
 
 EXAMPLES:
 
@@ -26,6 +27,15 @@ Answer: web
 
 Query: "How to troubleshoot login issues?"
 Answer: rag
+
+Query: "Run the login test case with username and password"
+Answer: test
+
+Query: "Verify the country dropdown on registration page does not contain embargo countries"
+Answer: test
+
+Query: "Check that the signup form rejects invalid emails"
+Answer: test
 
 Query: "What's the weather in Paris?"
 Answer: web
@@ -53,6 +63,7 @@ CRITICAL RULES:
 - Query contains "and" with TWO DIFFERENT questions → "multi"
 - Query mentions .com/.org or external companies → "web" (NOT db)
 - Query about current/latest news → "web" (NOT general)
+- Query asks to run tests or QA flows (including verify/validate/check) → "test"
 
 User query:
 {query}

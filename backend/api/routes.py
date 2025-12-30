@@ -1,15 +1,17 @@
 from fastapi import APIRouter
-from api.schemas import ChatRequest, ChatResponse, SourceAttribution
+from api.schemas import ChatRequest, ChatResponse, SourceAttribution, TestRunRequest, TestRunResponse, TestRunStatusResponse
 from graphs.multi_agent_graph import graph_app
 from graphs.state_schema import GraphState
 from services.memory_service import memory_service
+from services.test_run_service import start_test_run, get_test_run
 
 router = APIRouter()
 
 @router.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest):
     # Get conversation history
-    history = memory_service.get_history(req.user_id, limit=5)  # Last 5 exchanges
+    history = memory_service.get_history(req.user_id, limit=5)
+    # print(f"printing history {history}")# Last 5 exchanges
     
     # Add current user message to memory
     memory_service.add_message(req.user_id, "user", req.message)
@@ -22,6 +24,7 @@ def chat(req: ChatRequest):
     }
 
     final_state = graph_app.invoke(init_state)
+    print(f"printing final state {final_state}")
 
     answer = final_state.get("answer", "")
     route = final_state.get("route")
@@ -75,3 +78,18 @@ def cleanup_old_history(days: int = 30):
         "deleted_count": deleted_count,
         "message": f"Deleted conversations older than {days} days"
     }
+
+@router.post("/tests/run", response_model=TestRunResponse)
+def run_test(req: TestRunRequest):
+    run_id = start_test_run(
+        query=req.query,
+        tags=req.tags,
+        doc_filename=req.doc_filename,
+        base_url=req.base_url,
+        test_data_override=req.test_data,
+    )
+    return TestRunResponse(run_id=run_id)
+
+@router.get("/tests/{run_id}", response_model=TestRunStatusResponse)
+def get_test_status(run_id: str):
+    return get_test_run(run_id)

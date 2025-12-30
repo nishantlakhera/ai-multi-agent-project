@@ -1,8 +1,9 @@
 from fastapi import APIRouter
-from api.schemas import PlanRequest, PlanResponse, RAGRequest, RAGResponse, DBRequest, DBResponse
+from api.schemas import PlanRequest, PlanResponse, RAGRequest, RAGResponse, DBRequest, DBResponse, TestRunRequest, TestRunResponse
 from planner.mcp_planner import run_mcp_plan
 from tools.rag_tool import search_documents
 from tools.db_tool import query_database
+from tools.playwright_tool import run_dsl_plan
 
 router = APIRouter()
 
@@ -57,8 +58,18 @@ def db_query(req: DBRequest):
             error=str(e)
         )
 
+@router.post("/tests/run", response_model=TestRunResponse)
+def run_tests(req: TestRunRequest):
+    """
+    Execute Playwright DSL plan and return result
+    """
+    try:
+        result = run_dsl_plan(req.plan, req.run_id)
+        return TestRunResponse(**result)
+    except Exception as e:
+        return TestRunResponse(status="failed", error=str(e), steps=[], artifacts=[])
+
 @router.get("/health")
 def health():
     """Health check endpoint"""
     return {"status": "healthy", "service": "mcp"}
-

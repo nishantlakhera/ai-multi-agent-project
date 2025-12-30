@@ -122,8 +122,11 @@ class MemoryService:
             try:
                 key = self._redis_key(user_id)
                 cached = self.redis.lrange(key, 0, -1)
+                # print(f"[MemoryService] Redis key {key}")
+                # print(f"cached: {cached}")
                 if cached:
                     history = [json.loads(item) for item in cached]
+                    # print(f"[MemoryService] Redis cached: {history}")
                     return history[-limit:] if limit else history
             except Exception as e:
                 logger.warning(f"[MemoryService] Redis cache read failed: {e}")

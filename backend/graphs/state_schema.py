@@ -1,6 +1,6 @@
 from typing import TypedDict, List, Literal, Any, Optional
 
-Route = Literal["rag", "db", "web", "multi", "general"]
+Route = Literal["rag", "db", "web", "multi", "general", "test"]
 
 class GraphState(TypedDict, total=False):
     user_id: str
@@ -13,4 +13,5 @@ class GraphState(TypedDict, total=False):
     general_response: str
     fused_context: str
     answer: str
+    test_run_id: str
     debug: dict

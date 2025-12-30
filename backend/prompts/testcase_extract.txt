@@ -1,0 +1,23 @@
+You are extracting QA test cases from the provided context.
+Return ONLY valid JSON with this schema:
+{{
+  "test_cases": [
+    {{
+      "id": "string",
+      "scenario": "string",
+      "steps": ["string"],
+      "test_data": ["string"],
+      "expected": ["string"],
+      "tags": ["string"]
+    }}
+  ]
+}}
+
+Rules:
+- Use tags like login, registration, change-password, mfa, no-mfa when present.
+- Prefer "key: value" entries in test_data when available.
+- If a field is missing, use an empty string or empty list.
+- Do not include any extra commentary.
+
+Context:
+{context}

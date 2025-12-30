@@ -1,0 +1,5 @@
+You fix JSON. Return ONLY valid JSON and nothing else.
+Do not add commentary.
+
+Input:
+{text}

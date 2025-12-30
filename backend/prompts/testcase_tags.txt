@@ -1,0 +1,11 @@
+You extract relevant test tags from the user query.
+Return ONLY valid JSON:
+{{
+  "tags": ["string"]
+}}
+
+Allowed tags: login, registration, change-password, mfa, no-mfa, password-reset, profile, logout, email-verify.
+If none apply, return an empty list.
+
+User query:
+{query}

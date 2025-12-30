@@ -5,3 +5,4 @@ httpx
 beautifulsoup4
 psycopg2-binary
 qdrant-client
+playwright

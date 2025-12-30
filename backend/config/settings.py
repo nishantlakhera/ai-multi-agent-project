@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     QDRANT_URL: str = "http://localhost:6333"
     QDRANT_API_KEY: Optional[str] = None
     QDRANT_COLLECTION_NAME: str = "documents"
+    TESTCASE_QDRANT_COLLECTION_NAME: str = "test_cases"
 
     MCP_SERVICE_URL: str = "http://localhost:8001"
 
@@ -42,6 +43,9 @@ class Settings(BaseSettings):
     REDIS_URL: Optional[str] = None
     REDIS_HISTORY_TTL_SECONDS: int = 3600
     REDIS_HISTORY_MAX_ITEMS: int = 50
+
+    TEST_RAG_TOP_K: int = 6
+    TEST_RUN_TTL_SECONDS: int = 86400
 
     ENV: str = "dev"
 

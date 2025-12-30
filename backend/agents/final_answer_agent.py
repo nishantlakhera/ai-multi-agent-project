@@ -46,6 +46,14 @@ def final_answer_agent(state: GraphState) -> GraphState:
             state.setdefault("debug", {})["answer_length"] = len(general_response)
             logger.info(f"[final_answer_agent] Using general response (length: {len(general_response)})")
             return state
+
+    # For test route, use the prebuilt response from test_agent
+    if route == "test":
+        existing = state.get("answer", "")
+        if existing:
+            state.setdefault("debug", {})["answer_length"] = len(existing)
+            logger.info("[final_answer_agent] Using test run response")
+            return state
     
     # For other routes, use fused context with conversation history
     fused_context = state.get("fused_context") or ""

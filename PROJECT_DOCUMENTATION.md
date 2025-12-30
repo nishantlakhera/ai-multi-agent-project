@@ -73,6 +73,7 @@ An **intelligent conversational AI assistant** that combines multiple specialize
 - **Database Queries** - SQL queries on PostgreSQL
 - **Document Search** - RAG (Retrieval-Augmented Generation) using Qdrant vector database
 - **Web Search** - Real-time web scraping and search
+- **Test Execution** - Run UI test cases in browser using Playwright (doc-driven testing)
 - **General Conversation** - Direct LLM responses for casual chat, math, and general knowledge
 - **Multi-Source Fusion** - Combines multiple sources when queries span different domains
 
@@ -139,7 +140,7 @@ An **intelligent conversational AI assistant** that combines multiple specialize
 │                                                                │
 │  ┌──────────┐                                                 │
 │  │  Router  │──> LangChain → Ollama (llama3)                 │
-│  │  Agent   │──> Route Decision (general/rag/db/web/multi)   │
+│  │  Agent   │──> Route Decision (general/rag/db/web/test/multi)│
 │  └────┬─────┘                                                 │
 │       │                                                       │
 │       ├─> General Agent ──> LangChain → Ollama (llama3)      │
@@ -153,7 +154,13 @@ An **intelligent conversational AI assistant** that combines multiple specialize
 │       ├─> Web Agent ────┬──> LangChain → Ollama (llama3)     │
 │       │                 └──> MCP Service ─> DuckDuckGo       │
 │       │                                                       │
-│       └─> Multi ────────> All Three Agents (parallel)        │
+│       ├─> Test Agent ───┬──> LangChain → Ollama (llama3)     │
+│       │                 ├──> Test RAG: Qdrant (test_cases)   │
+│       │                 ├──> Extract & Select Test Cases      │
+│       │                 ├──> Generate Test DSL (JSON)         │
+│       │                 └──> MCP Playwright ─> Browser Test   │
+│       │                                                       │
+│       └─> Multi ────────> All Agents (parallel)              │
 │                              │                                │
 │                              ▼                                │
 │               ┌────────────────────────────┐                 │
@@ -188,29 +195,29 @@ An **intelligent conversational AI assistant** that combines multiple specialize
 **MCP Service Architecture:**
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    MCP Service (Port 8001)                       │
-│              Model Context Protocol Tools                        │
-│  ┌────────────────┐  ┌────────────────┐  ┌─────────────────┐  │
-│  │   RAG Tool     │  │    DB Tool     │  │   Web Tool      │  │
-│  │   (Qdrant)     │  │  (PostgreSQL)  │  │ (DuckDuckGo)    │  │
-│  │                │  │                │  │                 │  │
-│  │ Embeddings:    │  │ SQL Generation:│  │ No LLM         │  │
-│  │ Ollama         │  │ LangChain      │  │ (Web scraping) │  │
-│  │ nomic-embed    │  │ → Ollama       │  │                │  │
-│  └───────┬────────┘  └───────┬────────┘  └────────┬────────┘  │
-└──────────┼───────────────────┼──────────────────────┼──────────┘
-           │                   │                      │
-           ▼                   ▼                      ▼
-    ┌──────────────┐   ┌─────────────┐      ┌───────────────┐
-    │   Qdrant     │   │ PostgreSQL  │      │  Web Search   │
-    │Vector Database│   │   Database  │      │  (Internet)   │
-    │  Port 6333   │   │  Port 5432  │      │               │
-    └──────────────┘   └─────────────┘      └───────────────┘
-    - 21 documents     - Users table         - DuckDuckGo API
-    - nomic-embed-text - Orders table        - BeautifulSoup
-    - Semantic search  - Conv. history       - Live web data
-                       - Context-aware
+┌──────────────────────────────────────────────────────────────────────────┐
+│                    MCP Service (Port 8001)                                │
+│              Model Context Protocol Tools                                 │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐ │
+│  │  RAG Tool    │  │   DB Tool    │  │  Web Tool    │  │Playwright   │ │
+│  │  (Qdrant)    │  │ (PostgreSQL) │  │(DuckDuckGo)  │  │   Tool      │ │
+│  │              │  │              │  │              │  │  (Browser)  │ │
+│  │ Embeddings:  │  │ SQL Gen:     │  │ No LLM       │  │             │ │
+│  │ Ollama       │  │ LangChain    │  │ (Scraping)   │  │ Test DSL    │ │
+│  │ nomic-embed  │  │ → Ollama     │  │              │  │ Executor    │ │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘  └──────┬──────┘ │
+└─────────┼──────────────────┼──────────────────┼──────────────────┼────────┘
+          │                  │                  │                  │
+          ▼                  ▼                  ▼                  ▼
+   ┌─────────────┐   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+   │  Qdrant     │   │ PostgreSQL   │  │ Web Search   │  │ Playwright   │
+   │Vector DB    │   │   Database   │  │  (Internet)  │  │   Browser    │
+   │ Port 6333   │   │  Port 5432   │  │              │  │              │
+   └─────────────┘   └──────────────┘  └──────────────┘  └──────────────┘
+   - 21 docs         - Users table      - DuckDuckGo     - UI Automation
+   - Test cases      - Orders table     - BeautifulSoup  - Screenshots
+   - nomic-embed     - Conv. history    - Live web data  - Smart locators
+   - Semantic search - Context-aware                     - DSL execution
 ```
 
 **Ollama Service:**
@@ -305,11 +312,11 @@ An **intelligent conversational AI assistant** that combines multiple specialize
 │  ┌──────────────────────────────────────────────────────────────────┐ │
 │  │                    DATA LAYER                                     │ │
 │  │                                                                    │ │
-│  │  ┌────────────────────────┐       ┌─────────────────────────────┐│ │
-│  │  │  PostgreSQL Service    │       │  Qdrant Service             ││ │
-│  │  │  ClusterIP: postgres   │       │  ClusterIP: qdrant          ││ │
-│  │  │  Port: 5432            │       │  Port: 6333                 ││ │
-│  │  └────────┬───────────────┘       └──────────┬──────────────────┘│ │
+│  │  ┌───────────────────┐  ┌──────────────────┐  ┌────────────────┐│ │
+│  │  │ PostgreSQL Service│  │  Qdrant Service  │  │ Redis Service  ││ │
+│  │  │ ClusterIP:postgres│  │  ClusterIP:qdrant│  │ ClusterIP:redis││ │
+│  │  │ Port: 5432        │  │  Port: 6333      │  │ Port: 6379     ││ │
+│  │  └─────────┬─────────┘  └────────┬─────────┘  └────────┬───────┘│ │
 │  │           │                                   │                   │ │
 │  │           ▼                                   ▼                   │ │
 │  │  ┌────────────────────────┐       ┌─────────────────────────────┐│ │
@@ -321,13 +328,13 @@ An **intelligent conversational AI assistant** that combines multiple specialize
 │  │  │                        │       │                             ││ │
 │  │  │  Data:                 │       │  Data:                      ││ │
 │  │  │  • Database: appdb     │       │  • Collection: documents    ││ │
-│  │  │  • Users: appuser      │       │  • Vectors: 21 chunks       ││ │
-│  │  │  • Password: apppass   │       │  • Dimensions: 768          ││ │
-│  │  │                        │       │  • Distance: Cosine         ││ │
-│  │  │  Tables:               │       │                             ││ │
-│  │  │  • users               │       │  Storage:                   ││ │
-│  │  │  • orders              │       │  • PersistentVolume         ││ │
-│  │  │  • conversation_history│       │  • /qdrant/storage          ││ │
+│  │  │  • Users: appuser      │       │  • Collection: test_cases   ││ │
+│  │  │  • Password: apppass   │       │  • Vectors: 21 doc chunks   ││ │
+│  │  │                        │       │  • Dimensions: 768          ││ │
+│  │  │  Tables:               │       │  • Distance: Cosine         ││ │
+│  │  │  • users               │       │                             ││ │
+│  │  │  • orders              │       │  Storage:                   ││ │
+│  │  │  • conversation_history│       │  • PersistentVolume         ││ │
 │  │  │  • user_sessions       │       │                             ││ │
 │  │  │  • user_actions        │       │                             ││ │
 │  │  │                        │       │                             ││ │
@@ -379,6 +386,15 @@ NETWORK FLOW:
       Backend → MCP Service (mcp-service:8001)
       → Web Tool → Internet (DuckDuckGo)
    
+   d) Test Path:
+      Backend → Test Agent
+      → Test RAG: Qdrant test_cases collection
+      → Extract & Select Test Cases
+      → Generate Test DSL (JSON)
+      → MCP Service (mcp-service:8001)
+      → Playwright Tool → Browser Automation
+      → Store Results: Redis (redis:6379)
+   
 6. Results → Fusion Agent → LangChain → Ollama
    ↓
 7. Final Answer Agent → LangChain → Ollama
@@ -388,8 +404,9 @@ NETWORK FLOW:
 STORAGE:
 ════════
 • PostgreSQL PersistentVolume: Conversation history, users, orders
-• Qdrant PersistentVolume: Document embeddings (21 chunks)
-• Both survive pod restarts and cluster reboots
+• Qdrant PersistentVolume: Document embeddings (21 chunks) + test cases
+• Redis: Conversation history cache + test run results (volatile)
+• All persistent storage survives pod restarts and cluster reboots
 ```
 
 ### Deployment Architecture (Legacy - Docker Compose)
@@ -437,6 +454,7 @@ For reference, the previous Docker Compose architecture:
 | **Cache** | Redis | 7+ | Conversation history caching |
 | **LLM Provider** | Ollama (llama3) | Latest | Local LLM inference |
 | **Embeddings** | nomic-embed-text | Latest | Text vectorization |
+| **Browser Automation** | Playwright | Latest | UI test execution |
 | **Container Orchestration** | Kubernetes (Minikube) | 1.28+ | Service deployment |
 
 ### Python Dependencies
@@ -470,6 +488,7 @@ httpx                  # HTTP client
 beautifulsoup4         # Web scraping
 psycopg2-binary        # PostgreSQL
 qdrant-client          # Qdrant
+playwright             # Browser automation for tests
 ```
 
 ---
@@ -485,11 +504,12 @@ ai-multi-agent-project/
 │   │   ├── rag_agent.py              # Document retrieval agent
 │   │   ├── db_agent.py               # Database query agent
 │   │   ├── web_agent.py              # Web search agent
+│   │   ├── test_agent.py             # Test execution agent (NEW)
 │   │   ├── fusion_agent.py           # Multi-source result combiner
 │   │   └── final_answer_agent.py     # Response formatter
 │   │
 │   ├── api/                          # REST API layer
-│   │   ├── routes.py                 # API endpoints
+│   │   ├── routes.py                 # API endpoints (includes /tests/*)
 │   │   └── schemas.py                # Request/response models
 │   │
 │   ├── config/                       # Configuration
@@ -508,16 +528,27 @@ ai-multi-agent-project/
 │   │   ├── router.txt                # Routing classification
 │   │   ├── rag.txt                   # RAG generation
 │   │   ├── db.txt                    # SQL generation
-│   │   └── web.txt                   # Web search planning
+│   │   ├── web.txt                   # Web search planning
+│   │   ├── testcase_extract.txt      # Test case extraction (NEW)
+│   │   ├── testcase_dsl.txt          # Test DSL generation (NEW)
+│   │   └── testcase_tags.txt         # Test tag extraction (NEW)
 │   │
 │   ├── services/                     # Service layer
 │   │   ├── memory_service.py         # Conversation history (PostgreSQL)
 │   │   ├── postgres_service.py       # Database operations
 │   │   ├── qdrant_service.py         # Vector search
-│   │   └── embeddings_service.py     # Text embeddings
+│   │   ├── embeddings_service.py     # Text embeddings
+│   │   ├── test_run_service.py       # Test run orchestration (NEW)
+│   │   ├── testcase_rag_service.py   # Test case RAG retrieval (NEW)
+│   │   ├── testcase_extraction_service.py  # Test case extraction (NEW)
+│   │   ├── testcase_selection_service.py   # Test case selection (NEW)
+│   │   ├── testcase_dsl_service.py   # Test DSL generation (NEW)
+│   │   ├── test_run_store.py         # Redis test run storage (NEW)
+│   │   └── playwright_runner.py      # Playwright test executor (NEW)
 │   │
 │   ├── utils/                        # Utilities
 │   │   ├── helpers.py                # Helper functions
+│   │   ├── json_utils.py             # JSON parsing utilities
 │   │   └── logger.py                 # Logging setup
 │   │
 │   ├── main.py                       # FastAPI application
@@ -526,13 +557,14 @@ ai-multi-agent-project/
 │
 ├── mcp_service/                      # MCP Tool Service
 │   ├── api/
-│   │   ├── routes.py                 # MCP endpoints (/rag, /db, /plan)
+│   │   ├── routes.py                 # MCP endpoints (/rag, /db, /plan, /tests/*)
 │   │   └── schemas.py                # Request/response schemas
 │   │
 │   ├── tools/                        # MCP tools
 │   │   ├── rag_tool.py               # Qdrant vector search
 │   │   ├── db_tool.py                # SQL generation & execution
-│   │   └── web_tool.py               # Web scraping & search
+│   │   ├── web_tool.py               # Web scraping & search
+│   │   └── playwright_tool.py        # Playwright browser automation (NEW)
 │   │
 │   ├── planner/
 │   │   └── mcp_planner.py            # Tool execution planner
@@ -540,8 +572,11 @@ ai-multi-agent-project/
 │   ├── utils/
 │   │   └── logger.py                 # Logging
 │   │
+│   ├── logs/
+│   │   └── test_runs/                # Test run logs and screenshots (NEW)
+│   │
 │   ├── main.py                       # FastAPI application
-│   └── requirements.txt              # Dependencies
+│   └── requirements.txt              # Dependencies (includes playwright)
 │
 ├── frontend/                         # React UI
 │   ├── src/
@@ -556,13 +591,16 @@ ai-multi-agent-project/
 │
 ├── embeddings/                       # Document ingestion
 │   ├── document_loader.py            # Load documents
+│   ├── docx_loader.py                # Load DOCX files (NEW - for test cases)
 │   ├── ingestion_pipeline.py         # Process & embed documents
+│   ├── docx_ingestion_pipeline.py    # Process & embed test cases (NEW)
 │   └── cleanup.py                    # Cleanup utilities
 │
 ├── data/docs/                        # Source documents
 │   ├── technical_documentation.txt
 │   ├── user_guide.txt
-│   └── confluence_troubleshooting.txt
+│   ├── confluence_troubleshooting.txt
+│   └── test_case_template.docx       # Test case documents (NEW)
 │
 ├── minikube/                         # Kubernetes manifests
 │   └── postgres/
@@ -574,8 +612,18 @@ ai-multi-agent-project/
 │   ├── mcp.log
 │   └── frontend.log
 │
-├── startup.sh                        # Start all services
-├── shutdown.sh                       # Stop all services
+├── PROJECT_DOCUMENTATION.md          # Complete system documentation (this file)
+├── TEST_AGENT_GUIDE.md               # Test agent detailed guide (NEW)
+├── LOCAL_DEV_GUIDE.md                # Local development setup
+├── README.md                         # Quick start guide
+│
+├── start-all.sh                      # Complete system startup
+├── rebuild-deploy.sh                 # Rebuild & redeploy services
+├── stop-all.sh                       # Stop all services
+├── test_all_flows.sh                 # Comprehensive test suite (NEW)
+├── startup.sh                        # Start all services (legacy)
+├── shutdown.sh                       # Stop all services (legacy)
+│
 ├── docker-compose.yml                # Docker orchestration
 └── requirements.txt                  # Root dependencies
 ```
@@ -697,7 +745,7 @@ prompt = ChatPromptTemplate.from_messages([
 response = llm.invoke(prompt.format_messages(query="Hello"))
 ```
 
-### 2. LangGraph
+### 4. LangGraph
 
 **Role:** Agent Workflow Orchestration
 
@@ -744,7 +792,7 @@ class GraphState(TypedDict):
 - `fusion_agent` → Combines multi-source results
 - `final_answer_agent` → Formats user-facing response
 
-### 3. MCP (Model Context Protocol)
+### 5. MCP (Model Context Protocol)
 
 **Role:** Standardized Tool Execution Service
 
@@ -763,6 +811,7 @@ class GraphState(TypedDict):
 | `/rag` | POST | Vector search | `{query, top_k}` | `{documents: [...]}` |
 | `/db` | POST | SQL execution | `{query}` | `{results: [...], sql}` |
 | `/plan` | POST | Web search | `{plan}` | `{results: [...]}` |
+| `/tests/run` | POST | Test execution | `{test_dsl: {...}}` | `{status, screenshots, logs}` |
 
 **RAG Tool Workflow:**
 ```
@@ -792,7 +841,18 @@ class GraphState(TypedDict):
 6. Return formatted results
 ```
 
-### 4. Qdrant Vector Database
+**Playwright Tool Workflow:**
+```
+1. Receive Test DSL (JSON) from backend
+2. Parse DSL actions (goto, click, fill, select, assert_visible, assert_text, screenshot)
+3. Launch Playwright browser (Chromium)
+4. Execute test steps sequentially
+5. Use smart locators (role, label, text, placeholder, CSS)
+6. Capture screenshots on assertions and errors
+7. Return execution status, logs, and screenshot paths
+```
+
+### 6. Qdrant Vector Database
 
 **Role:** Semantic Document Search
 
@@ -806,13 +866,17 @@ class GraphState(TypedDict):
 **Configuration:**
 ```python
 QDRANT_URL = "http://localhost:6333"
-QDRANT_COLLECTION_NAME = "documents"
-EMBEDDING_MODEL = "nomic-embed-text"  # 768 dimensions
+QDRANT_COLLECTION_NAME = "documents"        # Main documentation
+QDRANT_TEST_COLLECTION = "test_cases"       # Test case library
+EMBEDDING_MODEL = "nomic-embed-text"        # 768 dimensions
 ```
 
-**Collection Schema:**
+**Collection Schemas:**
+
+**Documents Collection:**
 ```python
 {
+    "name": "documents",
     "vectors": {
         "size": 768,  # nomic-embed-text dimensions
         "distance": "Cosine"
@@ -826,11 +890,28 @@ EMBEDDING_MODEL = "nomic-embed-text"  # 768 dimensions
 }
 ```
 
+**Test Cases Collection:**
+```python
+{
+    "name": "test_cases",
+    "vectors": {
+        "size": 768,  # nomic-embed-text dimensions
+        "distance": "Cosine"
+    },
+    "payload": {
+        "test_name": str,       # Test case name
+        "tags": List[str],      # Search tags (login, checkout, etc.)
+        "description": str,     # Test description
+        "steps": List[dict],    # Test steps with locators
+        "source": str,          # Source DOCX file
+        "metadata": dict        # Additional metadata
+    }
+}
+```
+
 **Current Data:**
-- **21 document chunks** from 3 source files
-- Technical documentation
-- User guides
-- Troubleshooting content
+- **Documents collection:** 21 chunks from 3 source files (technical docs, user guides, troubleshooting)
+- **Test Cases collection:** UI test cases extracted from DOCX files
 
 **Query Process:**
 ```python
@@ -850,7 +931,168 @@ results = qdrant_client.query_points(
 # 3. Return top matches with scores
 ```
 
-### 5. PostgreSQL Database
+### 7. Test Agent & Playwright Tool
+
+**Role:** UI Test Execution Engine
+
+**Responsibilities:**
+- **Test Case Retrieval** - RAG-based search in Qdrant test_cases collection
+- **Test Selection** - Match user query to relevant test cases using embeddings
+- **Test DSL Generation** - Convert natural language to structured test JSON
+- **Async Execution** - Run tests in background thread with immediate response
+- **Browser Automation** - Execute tests via Playwright in Chromium
+- **Result Storage** - Store test run results in Redis with unique run_id
+- **Status Polling** - Allow clients to check test progress
+
+**Architecture:**
+```
+User Query ("run login test case")
+         ↓
+   Test Agent (backend)
+         ↓
+   ┌─────────────────────────────────────┐
+   │ 1. Extract Tags & Metadata          │
+   │    • Tags: ["login", "authentication"]
+   │    • Base URL: from query or config │
+   │    • Test data: username, password   │
+   └──────────┬──────────────────────────┘
+              ↓
+   ┌─────────────────────────────────────┐
+   │ 2. RAG Pre-Check                    │
+   │    • Query: Qdrant test_cases       │
+   │    • Check: Does test exist?        │
+   │    • Similarity threshold: 0.7      │
+   └──────────┬──────────────────────────┘
+              ↓
+   ┌─────────────────────────────────────┐
+   │ 3. Start Async Test Run             │
+   │    • Generate run_id (UUID)         │
+   │    • Background thread spawned      │
+   │    • Return: {"run_id": "..."}     │
+   └──────────┬──────────────────────────┘
+              ↓
+   ┌─────────────────────────────────────┐
+   │ BACKGROUND: Test Execution Pipeline │
+   │                                     │
+   │  a) Test Case RAG                   │
+   │     • Embed query with nomic-embed  │
+   │     • Search test_cases collection  │
+   │     • Return top 3 matches          │
+   │                                     │
+   │  b) Extract Test Case               │
+   │     • Parse DOCX table structure    │
+   │     • Extract steps, locators, data │
+   │                                     │
+   │  c) Select Best Test                │
+   │     • Score by tags & similarity    │
+   │     • Pick highest scoring test     │
+   │                                     │
+   │  d) Generate Test DSL               │
+   │     • LLM converts to JSON format   │
+   │     • Actions: goto, click, fill... │
+   │     • Smart locators: role, text... │
+   │                                     │
+   │  e) Execute with Playwright         │
+   │     • Call MCP /tests/run           │
+   │     • Playwright runs in Chromium   │
+   │     • Screenshots on assertions     │
+   │                                     │
+   │  f) Store Results in Redis          │
+   │     • Key: test_run:{run_id}        │
+   │     • Status: running/passed/failed │
+   │     • TTL: 1 hour                   │
+   └──────────┬──────────────────────────┘
+              ↓
+   Client polls: GET /api/tests/{run_id}
+```
+
+**Test DSL Format:**
+```json
+{
+  "base_url": "https://example.com",
+  "actions": [
+    {
+      "action": "goto",
+      "url": "/login"
+    },
+    {
+      "action": "fill",
+      "locator": {"role": "textbox", "name": "username"},
+      "value": "testuser"
+    },
+    {
+      "action": "click",
+      "locator": {"role": "button", "name": "Login"}
+    },
+    {
+      "action": "assert_visible",
+      "locator": {"role": "heading", "name": "Dashboard"}
+    },
+    {
+      "action": "screenshot",
+      "name": "dashboard_loaded"
+    }
+  ]
+}
+```
+
+**Supported Actions:**
+- `goto` - Navigate to URL
+- `click` - Click element
+- `fill` - Fill input field
+- `select` - Select dropdown option
+- `assert_visible` - Assert element is visible
+- `assert_text` - Assert element contains text
+- `screenshot` - Capture screenshot
+
+**Smart Locators:**
+- `role` - Accessibility role (button, textbox, link, etc.)
+- `label` - Associated label text
+- `text` - Exact text content
+- `placeholder` - Input placeholder
+- `css` - CSS selector (fallback)
+
+**Configuration:**
+```python
+QDRANT_TEST_COLLECTION = "test_cases"
+PLAYWRIGHT_BROWSER = "chromium"
+PLAYWRIGHT_HEADLESS = True
+PLAYWRIGHT_TIMEOUT = 30000  # 30 seconds
+REDIS_TEST_RUN_TTL = 3600   # 1 hour
+```
+
+**Key Files:**
+- `backend/agents/test_agent.py` - Test agent orchestrator
+- `backend/services/test_run_service.py` - Async test execution
+- `backend/services/testcase_rag_service.py` - Test case retrieval
+- `backend/services/testcase_extraction_service.py` - DOCX parsing
+- `backend/services/testcase_selection_service.py` - Best test selection
+- `backend/services/testcase_dsl_service.py` - DSL generation
+- `backend/services/test_run_store.py` - Redis storage
+- `mcp_service/tools/playwright_tool.py` - Browser automation
+
+**Usage Example:**
+```bash
+# Start test run
+curl -X POST http://localhost:8000/chat \
+  -d '{"user_id": "test", "message": "run login test case for https://example.com"}'
+# Response: {"answer": "Test run started: abc-123-def", "run_id": "abc-123-def"}
+
+# Check status
+curl http://localhost:8000/api/tests/abc-123-def
+# Response: {"status": "running", "progress": "50%"}
+
+# Poll until complete
+curl http://localhost:8000/api/tests/abc-123-def
+# Response: {
+#   "status": "passed",
+#   "steps_executed": 5,
+#   "screenshots": ["dashboard_loaded.png"],
+#   "execution_time": "12.3s"
+# }
+```
+
+### 8. PostgreSQL Database
 
 **Role:** Structured Data & Conversation History
 
@@ -2360,7 +2602,382 @@ User Query: "What are the latest AI trends?"
              Sources: [url1, url2, url3]"
 ```
 
-#### 5. Multi-Source Fusion Flow (Complex Queries)
+#### 5. Test Execution Flow (UI Automation)
+
+**Example:** "run login test case" or "run registration test doc=test_case_template.docx"
+
+```
+User Query: "run login test case doc=test_case_template.docx"
+  ↓
+① APISIX → Backend (0.1ms)
+  ↓
+② Load History from Redis (0.5ms)
+  ↓
+③ Router Agent (500ms)
+  • Classification: "test" (confidence: 0.88)
+  • Reason: "Request to run test case with Playwright"
+  ↓
+④ Test Agent (Pre-check - 2000ms)
+  • Step 1: Extract Test Metadata
+  •   Query parsing:
+  •     - Extracts tags from query
+  •     - Extracts doc filename: "test_case_template.docx"
+  •     - Extracts base_url if provided
+  •     - Extracts test_data overrides (key=value pairs)
+  •   Time: 500ms (LLM call for tag extraction)
+  •
+  • Step 2: Quick RAG Lookup
+  •   Request: {"query": "login test case", "filename": "test_case_template.docx"}
+  •   
+  •   Test RAG Service:
+  •   a) Generate Query Embedding (Ollama nomic-embed-text)
+  •      Time: 200ms
+  •   
+  •   b) Search Qdrant test_cases Collection
+  •      Limit: 5
+  •      Filter by filename if provided
+  •      Time: 100ms
+  •   
+  •   c) Return Relevant Test Case Chunks
+  •      Result: 3 chunks found
+  •      Time: 10ms
+  •   
+  •   Total RAG Time: 310ms
+  •
+  • Step 3: Pre-check Validation
+  •   If no chunks found → Return error: "No relevant test cases found"
+  •   If chunks found → Proceed to test run service
+  •   Time: 1190ms
+  ↓
+⑤ Test Run Service (Async - 45000ms)
+  • Creates test run with unique run_id
+  • Returns immediately: "Started test run {run_id}"
+  • Background thread processes test execution:
+  •
+  • ┌─ Background Thread Processing ─────────────────────────┐
+  • │  Step 1: Retrieve Test Case Chunks                     │
+  • │  • Uses same RAG query as pre-check                    │
+  • │  • Gets full context (5 chunks)                        │
+  • │  • Time: 500ms                                         │
+  • │                                                        │
+  • │  Step 2: Extract Structured Test Cases                │
+  • │  • Prompt: "Extract test cases from these chunks"     │
+  • │  • LLM parses table format:                           │
+  • │    {                                                   │
+  • │      "scenario": "User Login Flow",                   │
+  • │      "test_steps": [                                   │
+  • │        "Goto https://qa.site.com",                    │
+  • │        "Click Sign in toggle",                        │
+  • │        "Click Sign in link",                          │
+  • │        "Fill Email: user@example.com",                │
+  • │        "Fill Password: Secret123",                    │
+  • │        "Click Sign in button"                         │
+  • │      ],                                                │
+  • │      "test_data": {                                    │
+  • │        "email": "user@example.com",                   │
+  • │        "password": "Secret123"                        │
+  • │      },                                                │
+  • │      "expected": "User dashboard page displayed",     │
+  • │      "tags": ["login", "smoke"]                       │
+  • │    }                                                   │
+  • │  • Time: 8000ms (LLM extraction)                      │
+  • │                                                        │
+  • │  Step 3: Select Best Matching Test Case              │
+  • │  • Compares query against all extracted cases         │
+  • │  • Uses tag matching + semantic similarity            │
+  • │  • Selects: "User Login Flow" (score: 0.92)          │
+  • │  • Time: 3000ms (LLM selection)                       │
+  • │                                                        │
+  • │  Step 4: Generate Test DSL (Domain Specific Language)│
+  • │  • Prompt: "Convert test case to executable DSL"     │
+  • │  • LLM generates deterministic JSON:                  │
+  • │    {                                                   │
+  • │      "name": "User Login Flow",                       │
+  • │      "base_url": "https://qa.site.com",              │
+  • │      "steps": [                                        │
+  • │        {"action": "goto", "target": "/"},            │
+  • │        {"action": "click",                            │
+  • │         "target": "css=#sign-in-toggle"},            │
+  • │        {"action": "click",                            │
+  • │         "target": "css=li#sign-in .cmp-ctaitem"},    │
+  • │        {"action": "fill",                             │
+  • │         "target": "label=\"Email\"",                  │
+  • │         "value": "user@example.com"},                │
+  • │        {"action": "fill",                             │
+  • │         "target": "label=\"Password\"",               │
+  • │         "value": "Secret123"},                       │
+  • │        {"action": "click",                            │
+  • │         "target": "role=button name=\"Sign in\""}    │
+  • │      ]                                                 │
+  • │    }                                                   │
+  • │  • Time: 10000ms (LLM DSL generation)                 │
+  • │                                                        │
+  • │  Step 5: Execute Test via MCP Service                │
+  • │  • POST http://mcp-service:8001/tests/run            │
+  • │  • Request: {"run_id": "...", "plan": {...}}         │
+  • │                                                        │
+  • │  MCP Playwright Tool Processing:                      │
+  • │  a) Launch Browser (Chromium)                         │
+  • │     • Headless mode (configurable)                    │
+  • │     • Timeout: 15s per step                           │
+  • │     • Time: 2000ms                                    │
+  • │                                                        │
+  • │  b) Execute DSL Steps Sequentially                    │
+  • │     Step 1: goto "/"                                  │
+  • │       • Navigate to https://qa.site.com/             │
+  • │       • Wait for page load                            │
+  • │       • Screenshot: step_1_goto.png                   │
+  • │       • Time: 3000ms                                  │
+  • │                                                        │
+  • │     Step 2: click "css=#sign-in-toggle"              │
+  • │       • Locate element by CSS selector                │
+  • │       • Click element                                 │
+  • │       • Screenshot: step_2_click.png                  │
+  • │       • Time: 1500ms                                  │
+  • │                                                        │
+  • │     Step 3: click "css=li#sign-in .cmp-ctaitem"      │
+  • │       • Locate link element                           │
+  • │       • Click link                                    │
+  • │       • Screenshot: step_3_click.png                  │
+  • │       • Time: 2000ms                                  │
+  • │                                                        │
+  • │     Step 4: fill "label=\"Email\""                    │
+  • │       • Locate input by label                         │
+  • │       • Type value: user@example.com                  │
+  • │       • Screenshot: step_4_fill.png                   │
+  • │       • Time: 1000ms                                  │
+  • │                                                        │
+  • │     Step 5: fill "label=\"Password\""                 │
+  • │       • Locate input by label                         │
+  • │       • Type value: Secret123                        │
+  • │       • Screenshot: step_5_fill.png                   │
+  • │       • Time: 1000ms                                  │
+  • │                                                        │
+  • │     Step 6: click "role=button name=\"Sign in\""     │
+  • │       • Locate button by role and name                │
+  • │       • Click button                                  │
+  • │       • Wait for navigation                           │
+  • │       • Screenshot: step_6_click.png                  │
+  • │       • Time: 3000ms                                  │
+  • │                                                        │
+  • │  c) Collect Results                                   │
+  • │     • Status: passed/failed                           │
+  • │     • Steps executed: 6                               │
+  • │     • Screenshots: 6 files                            │
+  • │     • Failed step: null (if all passed)               │
+  • │     • Error: null (if no errors)                      │
+  • │     • Time: 500ms                                     │
+  • │                                                        │
+  • │  d) Close Browser                                     │
+  • │     • Cleanup resources                               │
+  • │     • Time: 1000ms                                    │
+  • │                                                        │
+  • │  Total MCP Playwright Time: 15000ms                   │
+  • │                                                        │
+  • │  Step 6: Store Results in Redis                      │
+  • │  • Save test run status: "passed"                     │
+  • │  • Save steps with screenshots                        │
+  • │  • Save artifacts (screenshot files)                  │
+  • │  • Key: test_run:{run_id}                            │
+  • │  • Time: 500ms                                        │
+  • │                                                        │
+  • │  Total Background Processing: ~38000ms                │
+  • └────────────────────────────────────────────────────────┘
+  ↓
+⑥ User Polls for Status
+  • GET /api/tests/{run_id}
+  • Returns current status:
+  •   - status: "running" | "passed" | "failed"
+  •   - steps: [...] (with screenshots)
+  •   - artifacts: [...] (screenshot URLs)
+  •   - error: null | "error message"
+  ↓
+⑦ Return to User (Immediate Response ~3 seconds)
+  Response: "Started test run abc-123-def. Check status at /api/tests/abc-123-def."
+  
+  After polling (~40 seconds later):
+  {
+    "run_id": "abc-123-def",
+    "status": "passed",
+    "query": "run login test case",
+    "doc_filename": "test_case_template.docx",
+    "tags": "login,smoke",
+    "steps": [
+      {
+        "step": 1,
+        "action": "goto",
+        "target": "/",
+        "status": "passed",
+        "screenshot": "/screenshots/abc-123-def/step_1_goto.png"
+      },
+      // ... more steps
+    ],
+    "artifacts": [
+      {
+        "type": "screenshot",
+        "path": "/screenshots/abc-123-def/step_1_goto.png"
+      }
+    ],
+    "failed_step": null,
+    "error": null
+  }
+```
+
+**Test Agent Architecture:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Test Agent End-to-End Flow                    │
+└─────────────────────────────────────────────────────────────────┘
+
+1. TEST CASE INGESTION (One-time setup)
+   ┌──────────────────┐
+   │ Test Case Docs   │ (.docx files with test case tables)
+   │ - test_case_template.docx
+   │ - smoke_tests.docx
+   └────────┬─────────┘
+            │
+            ▼
+   ┌──────────────────┐
+   │ Extract Tables   │ Parse tables: Scenario, Steps, Data, Expected, Tags
+   │ from DOCX        │ Convert to structured chunks
+   └────────┬─────────┘
+            │
+            ▼
+   ┌──────────────────┐
+   │ Generate         │ Ollama: nomic-embed-text
+   │ Embeddings       │ 768 dimensions per chunk
+   └────────┬─────────┘
+            │
+            ▼
+   ┌──────────────────┐
+   │ Qdrant           │ Store in "test_cases" collection
+   │ test_cases       │ Separate from "documents"
+   └──────────────────┘
+
+2. TEST EXECUTION (Runtime)
+   ┌──────────────────┐
+   │ User Query       │ "run login test case doc=test.docx"
+   └────────┬─────────┘
+            │
+            ▼
+   ┌──────────────────┐
+   │ Test Agent       │ Extract: tags, doc, base_url, test_data
+   │ Pre-check        │ Quick RAG lookup to validate test cases exist
+   └────────┬─────────┘
+            │
+            ▼
+   ┌──────────────────┐
+   │ Test Run Service │ Create test run with unique ID
+   │ (Async)          │ Return immediately
+   └────────┬─────────┘
+            │
+            ▼
+   ┌───────────────────────────────────────────────────────┐
+   │ Background Processing (runs in separate thread)       │
+   │                                                        │
+   │  1. Retrieve test case chunks from Qdrant            │
+   │  2. Extract structured test cases (LLM)               │
+   │  3. Select best matching case (LLM + tag matching)    │
+   │  4. Generate Test DSL (LLM)                           │
+   │  5. Execute in MCP Playwright Tool                    │
+   │  6. Store results in Redis                            │
+   └─────────────────────┬─────────────────────────────────┘
+                         │
+                         ▼
+            ┌────────────────────────┐
+            │ Redis Test Run Store   │ Results accessible via API
+            │ Key: test_run:{run_id} │
+            └────────────────────────┘
+```
+
+**Test DSL (Domain Specific Language):**
+
+The Test Agent converts natural language test cases into a deterministic JSON format:
+
+```json
+{
+  "name": "User Login Flow",
+  "base_url": "https://qa.thermofisher.com",
+  "steps": [
+    {
+      "action": "goto",
+      "target": "/"
+    },
+    {
+      "action": "click",
+      "target": "css=#sign-in-toggle"
+    },
+    {
+      "action": "click",
+      "target": "css=li#sign-in .cmp-ctaitem__anchor"
+    },
+    {
+      "action": "fill",
+      "target": "label=\"Email\"",
+      "value": "user@example.com"
+    },
+    {
+      "action": "fill",
+      "target": "label=\"Password\"",
+      "value": "Secret123"
+    },
+    {
+      "action": "click",
+      "target": "role=button name=\"Sign in\""
+    },
+    {
+      "action": "assert_visible",
+      "target": "text=\"Welcome\""
+    },
+    {
+      "action": "screenshot",
+      "target": "dashboard"
+    }
+  ]
+}
+```
+
+**Supported DSL Actions:**
+- `goto`: Navigate to URL (absolute or relative to base_url)
+- `click`: Click element (supports CSS, role, label, text selectors)
+- `fill`: Type into input field
+- `select`: Select dropdown option
+- `assert_visible`: Assert element is visible
+- `assert_text`: Assert text content matches
+- `screenshot`: Take screenshot with name
+
+**Playwright Tool Features:**
+- **Smart Locators**: Supports role, label, text, placeholder, CSS selectors
+- **Fallback Strategies**: Tries multiple locator strategies if primary fails
+- **Screenshot Capture**: Automatic screenshot after each step
+- **Cookie Banner Dismissal**: Automatically dismisses cookie consent popups
+- **Configurable Timeouts**: 15s default per step (configurable)
+- **Headless Mode**: Runs browser in background (configurable)
+- **Debug Mode**: Can pause execution for manual inspection
+
+**Key Files:**
+- Test Agent: [backend/agents/test_agent.py](backend/agents/test_agent.py)
+- Test Run Service: [backend/services/test_run_service.py](backend/services/test_run_service.py)
+- Test RAG Service: [backend/services/testcase_rag_service.py](backend/services/testcase_rag_service.py)
+- Test Extraction Service: [backend/services/testcase_extraction_service.py](backend/services/testcase_extraction_service.py)
+- Test Selection Service: [backend/services/testcase_selection_service.py](backend/services/testcase_selection_service.py)
+- Test DSL Service: [backend/services/testcase_dsl_service.py](backend/services/testcase_dsl_service.py)
+- Test Run Store: [backend/services/test_run_store.py](backend/services/test_run_store.py)
+- MCP Playwright Tool: [mcp_service/tools/playwright_tool.py](mcp_service/tools/playwright_tool.py)
+- Test Prompts: [backend/prompts/testcase_extract.txt](backend/prompts/testcase_extract.txt), [backend/prompts/testcase_dsl.txt](backend/prompts/testcase_dsl.txt), [backend/prompts/testcase_tags.txt](backend/prompts/testcase_tags.txt)
+
+**For Detailed Test Agent Documentation:**
+See [TEST_AGENT_GUIDE.md](TEST_AGENT_GUIDE.md) for:
+- Complete architecture diagrams
+- Test case document format
+- Ingestion pipeline setup
+- DSL specification
+- MCP Playwright runner details
+- Example test cases
+- Troubleshooting guide
+
+#### 6. Multi-Source Fusion Flow (Complex Queries)
 
 **Example:** "Compare our user count with industry benchmarks" or "What do our docs say about users and show me the actual count"
 
@@ -2945,9 +3562,137 @@ Send a query and get an intelligent response.
 | `rag` | "How do I troubleshoot Confluence?" | Qdrant documents |
 | `db` | "Count users in database" | PostgreSQL |
 | `web` | "Latest Tesla news" | Web search |
+| `test` | "run login test case" | Browser automation (Playwright) |
 | `multi` | "Count users AND Tesla news" | All sources combined |
 
-#### 2. Conversation History
+#### 2. Test Run Endpoint (NEW)
+
+**POST** `/api/tests/{run_id}`
+
+Get the status and results of a test run.
+
+**Response (Running):**
+```json
+{
+  "run_id": "abc-123-def-456",
+  "status": "running",
+  "query": "run login test case doc=test_case_template.docx",
+  "doc_filename": "test_case_template.docx",
+  "tags": "login,smoke",
+  "steps": [],
+  "artifacts": [],
+  "created_at": "2025-12-27T10:30:00",
+  "updated_at": "2025-12-27T10:30:15"
+}
+```
+
+**Response (Passed):**
+```json
+{
+  "run_id": "abc-123-def-456",
+  "status": "passed",
+  "query": "run login test case doc=test_case_template.docx",
+  "doc_filename": "test_case_template.docx",
+  "tags": "login,smoke",
+  "steps": [
+    {
+      "step": 1,
+      "action": "goto",
+      "target": "/",
+      "status": "passed",
+      "screenshot": "/screenshots/abc-123-def-456/step_1_goto.png",
+      "duration_ms": 3000
+    },
+    {
+      "step": 2,
+      "action": "click",
+      "target": "css=#sign-in-toggle",
+      "status": "passed",
+      "screenshot": "/screenshots/abc-123-def-456/step_2_click.png",
+      "duration_ms": 1500
+    },
+    {
+      "step": 3,
+      "action": "fill",
+      "target": "label=\"Email\"",
+      "value": "user@example.com",
+      "status": "passed",
+      "screenshot": "/screenshots/abc-123-def-456/step_3_fill.png",
+      "duration_ms": 1000
+    }
+  ],
+  "artifacts": [
+    {
+      "type": "screenshot",
+      "step": 1,
+      "path": "/screenshots/abc-123-def-456/step_1_goto.png"
+    },
+    {
+      "type": "screenshot",
+      "step": 2,
+      "path": "/screenshots/abc-123-def-456/step_2_click.png"
+    }
+  ],
+  "failed_step": null,
+  "error": null,
+  "created_at": "2025-12-27T10:30:00",
+  "updated_at": "2025-12-27T10:31:15",
+  "duration_ms": 75000
+}
+```
+
+**Response (Failed):**
+```json
+{
+  "run_id": "abc-123-def-456",
+  "status": "failed",
+  "query": "run login test case",
+  "steps": [
+    {
+      "step": 1,
+      "action": "goto",
+      "target": "/",
+      "status": "passed",
+      "screenshot": "/screenshots/abc-123-def-456/step_1_goto.png"
+    },
+    {
+      "step": 2,
+      "action": "click",
+      "target": "css=#invalid-selector",
+      "status": "failed",
+      "error": "Element not found: css=#invalid-selector",
+      "screenshot": "/screenshots/abc-123-def-456/step_2_click_failed.png"
+    }
+  ],
+  "failed_step": 2,
+  "error": "Element not found: css=#invalid-selector",
+  "created_at": "2025-12-27T10:30:00",
+  "updated_at": "2025-12-27T10:30:45"
+}
+```
+
+**Usage Example:**
+```bash
+# Start a test run via chat
+curl -X POST http://localhost:9080/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"user_id":"tester","message":"run login test case doc=test.docx"}'
+
+# Response:
+# {
+#   "answer": "Started test run abc-123. Check status at /api/tests/abc-123.",
+#   "route": "test",
+#   "test_run_id": "abc-123-def-456"
+# }
+
+# Poll for test status
+curl http://localhost:9080/api/tests/abc-123-def-456
+
+# View screenshots (once test completes)
+open http://localhost:8001/screenshots/abc-123-def-456/step_1_goto.png
+```
+
+#### 3. Conversation History
 
 **GET** `/api/history/{user_id}?limit=10`
 
@@ -2973,7 +3718,7 @@ Retrieve conversation history for a user.
 }
 ```
 
-#### 3. Clear History
+#### 4. Clear History
 
 **DELETE** `/api/history/{user_id}`
 
@@ -2987,7 +3732,7 @@ Clear all conversation history for a user.
 }
 ```
 
-#### 4. Admin - Cleanup Old Conversations
+#### 5. Admin - Cleanup Old Conversations
 
 **POST** `/api/admin/cleanup-history?days=30`
 
@@ -3086,6 +3831,111 @@ Execute web search plan.
     }
   ]
 }
+```
+
+#### 4. Test Execution (NEW)
+
+**POST** `/tests/run`
+
+Execute a test case using Playwright in browser.
+
+**Request:**
+```json
+{
+  "run_id": "abc-123-def-456",
+  "plan": {
+    "name": "User Login Flow",
+    "base_url": "https://qa.thermofisher.com",
+    "steps": [
+      {
+        "action": "goto",
+        "target": "/"
+      },
+      {
+        "action": "click",
+        "target": "css=#sign-in-toggle"
+      },
+      {
+        "action": "fill",
+        "target": "label=\"Email\"",
+        "value": "user@example.com"
+      },
+      {
+        "action": "fill",
+        "target": "label=\"Password\"",
+        "value": "Secret123"
+      },
+      {
+        "action": "click",
+        "target": "role=button name=\"Sign in\""
+      },
+      {
+        "action": "assert_visible",
+        "target": "text=\"Welcome\""
+      },
+      {
+        "action": "screenshot",
+        "target": "dashboard"
+      }
+    ]
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "status": "passed",
+  "steps": [
+    {
+      "step": 1,
+      "action": "goto",
+      "target": "/",
+      "status": "passed",
+      "screenshot": "step_1_goto.png",
+      "duration_ms": 3000
+    },
+    {
+      "step": 2,
+      "action": "click",
+      "target": "css=#sign-in-toggle",
+      "status": "passed",
+      "screenshot": "step_2_click.png",
+      "duration_ms": 1500
+    }
+  ],
+  "artifacts": [
+    {
+      "type": "screenshot",
+      "path": "/logs/test_runs/abc-123-def-456/step_1_goto.png"
+    },
+    {
+      "type": "screenshot",
+      "path": "/logs/test_runs/abc-123-def-456/step_2_click.png"
+    }
+  ],
+  "failed_step": null,
+  "error": null
+}
+```
+
+**Supported DSL Actions:**
+- `goto`: Navigate to URL (absolute or relative to base_url)
+- `click`: Click element (CSS, role, label, text selectors)
+- `fill`: Type into input field
+- `select`: Select dropdown option
+- `assert_visible`: Assert element is visible
+- `assert_text`: Assert text content matches
+- `screenshot`: Take named screenshot
+
+**Playwright Configuration:**
+```bash
+# Environment variables (optional)
+PLAYWRIGHT_HEADLESS=true              # Run browser in headless mode
+PLAYWRIGHT_SLOW_MO_MS=0               # Slow down actions (for debugging)
+PLAYWRIGHT_PAUSE_ON_START=false       # Pause before execution
+TEST_RUN_OUTPUT_DIR=logs/test_runs    # Screenshot output directory
+TEST_RUN_STEP_TIMEOUT_MS=15000        # Timeout per step (15 seconds)
 ```
 
 ---

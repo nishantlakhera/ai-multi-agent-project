@@ -1,11 +1,6 @@
 """
 Router Agent - Query Classification and Routing
-Uses LangChain with structured output parsing for reliable routing decisions
 """
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import PydanticOutputParser
-from pydantic import BaseModel, Field
-from typing import Literal
 from graphs.state_schema import GraphState
 from utils.helpers import load_prompt
 from config.langchain_config import get_langchain_llm
@@ -14,21 +9,6 @@ import re
 
 # Initialize LangChain LLM
 llm = get_langchain_llm(temperature=0.1)
-
-# Define output structure for router
-class RouteDecision(BaseModel):
-    route: Literal["rag", "db", "web", "multi", "general"] = Field(
-        description="The routing decision: 'rag' for documents, 'db' for database, 'web' for search, 'multi' for combined, 'general' for conversational/simple queries"
-    )
-    confidence: float = Field(
-        description="Confidence score between 0 and 1",
-        ge=0.0,
-        le=1.0
-    )
-    reasoning: str = Field(description="Brief explanation of routing decision")
-
-# Create output parser
-parser = PydanticOutputParser(pydantic_object=RouteDecision)
 
 def router_agent(state: GraphState) -> GraphState:
     """
@@ -49,7 +29,10 @@ def router_agent(state: GraphState) -> GraphState:
         route_text = response.content.strip().lower()
         
         # Find the route word in the response
-        if "general" in route_text:
+        if "test" in route_text:
+            route = "test"
+            confidence = 0.9
+        elif "general" in route_text:
             route = "general"
             confidence = 0.9
         elif "multi" in route_text:
@@ -99,6 +82,10 @@ def heuristic_fallback(query_lower: str) -> str:
         if has_url and has_db:
             return "multi"
     
+    # Check for test keywords
+    if re.search(r'\b(run|execute|trigger)\b.*\b(test|tests|testcase|test case|playwright|automation)\b', query_lower):
+        return "test"
+
     # Check for database keywords
     if re.search(r'\b(how many|count|total|users?|orders?|sessions?|database|sql)\b', query_lower):
         return "db"

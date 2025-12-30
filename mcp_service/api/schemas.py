@@ -28,3 +28,13 @@ class DBResponse(BaseModel):
     row_count: int = 0
     error: Optional[str] = None
 
+class TestRunRequest(BaseModel):
+    run_id: str
+    plan: Dict[str, Any]
+
+class TestRunResponse(BaseModel):
+    status: str
+    failed_step: Optional[int] = None
+    error: Optional[str] = None
+    steps: List[Dict[str, Any]] = []
+    artifacts: List[Dict[str, Any]] = []

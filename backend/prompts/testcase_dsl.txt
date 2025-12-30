@@ -1,0 +1,46 @@
+You convert a test case into a deterministic UI action plan.
+Return ONLY valid JSON with this schema:
+{{
+  "name": "string",
+  "base_url": "string",
+  "steps": [
+    {{"action": "goto", "target": "string"}},
+    {{"action": "click", "target": "string"}},
+    {{"action": "fill", "target": "string", "value": "string"}},
+    {{"action": "select", "target": "string", "value": "string"}},
+    {{"action": "assert_visible", "target": "string"}},
+    {{"action": "assert_text", "target": "string", "value": "string"}},
+    {{"action": "screenshot", "value": "string"}}
+  ]
+}}
+
+Allowed actions: goto, click, fill, select, assert_visible, assert_text, screenshot.
+Locator format must be one of:
+- role=<role> name="<visible name>"
+- label="<label text>"
+- text="<visible text>"
+- placeholder="<placeholder text>"
+- css="<css selector>"
+
+If base_url is provided, set it in the JSON and use relative paths for goto.
+Use test_data for any input values (including credentials) when filling fields.
+Only use role= with valid roles: textbox, button, link, checkbox, radio, combobox, option.
+For input fields, prefer label= or placeholder= (not role=).
+
+Scenario:
+{scenario}
+
+Steps:
+{steps}
+
+Test Data:
+{test_data}
+
+Test Data (structured):
+{test_data_json}
+
+Expected:
+{expected}
+
+Base URL:
+{base_url}
