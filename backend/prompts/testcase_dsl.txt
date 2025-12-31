@@ -24,8 +24,12 @@ Locator format must be one of:
 
 If base_url is provided, set it in the JSON and use relative paths for goto.
 Use test_data for any input values (including credentials) when filling fields.
+Do not include comments or extra text outside the JSON.
+Do not use placeholder syntax like ${{value}}; use actual values from test_data_json when available.
 Only use role= with valid roles: textbox, button, link, checkbox, radio, combobox, option.
 For input fields, prefer label= or placeholder= (not role=).
+To avoid invalid JSON, use single quotes inside selector values, e.g.:
+role=button name='Sign in', label='Email', text='Create account'.
 
 Scenario:
 {scenario}

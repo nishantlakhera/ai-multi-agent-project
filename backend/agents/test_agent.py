@@ -2,7 +2,7 @@
 Test Agent - Triggers async test runs and returns run ID
 """
 import re
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Tuple, Any
 from graphs.state_schema import GraphState
 from config.settings import settings
 from config.langchain_config import get_langchain_llm
@@ -14,19 +14,22 @@ from utils.logger import logger
 
 llm = get_langchain_llm(temperature=0.1)
 
-def _extract_tags(query: str) -> List[str]:
+def _extract_requirements(query: str) -> Tuple[List[str], List[str]]:
     prompt = load_prompt("testcase_tags").format(query=query)
     try:
         response = llm.invoke(prompt)
         print(f" Tags extraction response: {response.content}")
         data = safe_json_loads(response.content)
         tags = data.get("tags", [])
+        required_terms = data.get("required_terms", [])
         print(f" Extracted tags: {tags}")
-        if isinstance(tags, list):
-            return [str(t) for t in tags if str(t).strip()]
+        print(f" Extracted required_terms: {required_terms}")
+        tag_list = [str(t) for t in tags if str(t).strip()] if isinstance(tags, list) else []
+        term_list = [str(t) for t in required_terms if str(t).strip()] if isinstance(required_terms, list) else []
+        return tag_list, term_list
     except Exception:
         pass
-    return []
+    return [], []
 
 def _extract_base_url(query: str) -> Optional[str]:
     match = re.search(r'(https?://[^\s,;]+)', query)
@@ -49,11 +52,22 @@ def _extract_test_data(query: str) -> Dict[str, str]:
         data[key] = raw_value.strip()
     return data
 
+def _normalize_text(text: str) -> str:
+    return re.sub(r"\s+", " ", text.lower()).strip()
+
+def _has_required_terms(chunks: List[Dict[str, Any]], required_terms: List[str]) -> bool:
+    if not required_terms:
+        return True
+    corpus = " ".join([chunk.get("text", "") for chunk in chunks])
+    normalized = _normalize_text(corpus)
+    return all(_normalize_text(term) in normalized for term in required_terms)
+
 def test_agent(state: GraphState) -> GraphState:
     query = state["query"]
     print(f" Query: {query}")
-    tags = _extract_tags(query)
+    tags, required_terms = _extract_requirements(query)
     print(f" Extracted tags: {tags}")
+    print(f" Extracted required_terms: {required_terms}")
     base_url = _extract_base_url(query)
     print(f" Extracted base_url: {base_url}")
     doc_filename = _extract_doc_filename(query)
@@ -72,6 +86,16 @@ def test_agent(state: GraphState) -> GraphState:
         state.setdefault("debug", {})["test_run_skipped"] = True
         return state
 
+    if required_terms and not _has_required_terms(chunks, required_terms):
+        message = (
+            "No matching test case found for the required terms. "
+            "Ingest the correct test case or specify a doc via `doc=YourDoc.docx`."
+        )
+        state["answer"] = message
+        state.setdefault("debug", {})["test_run_skipped"] = True
+        state.setdefault("debug", {})["test_required_terms"] = required_terms
+        return state
+
     logger.info(f"[test_agent] Starting test run for query: {query}")
     if not doc_filename:
         message = (
@@ -84,6 +108,7 @@ def test_agent(state: GraphState) -> GraphState:
     run_id = start_test_run(
         query=query,
         tags=tags or None,
+        required_terms=required_terms or None,
         doc_filename=doc_filename,
         base_url=base_url,
         test_data_override=test_data or None,
@@ -96,6 +121,8 @@ def test_agent(state: GraphState) -> GraphState:
     state["answer"] = message
     state.setdefault("debug", {})["test_run_id"] = run_id
     state.setdefault("debug", {})["test_tags"] = tags
+    if required_terms:
+        state.setdefault("debug", {})["test_required_terms"] = required_terms
     if test_data:
         state.setdefault("debug", {})["test_data_override"] = test_data
     return state

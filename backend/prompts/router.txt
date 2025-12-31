@@ -31,6 +31,12 @@ Answer: rag
 Query: "Run the login test case with username and password"
 Answer: test
 
+Query: "run change password"
+Answer: test
+
+Query: "run reset password flow"
+Answer: test
+
 Query: "Verify the country dropdown on registration page does not contain embargo countries"
 Answer: test
 

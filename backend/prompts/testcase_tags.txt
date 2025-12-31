@@ -1,11 +1,14 @@
-You extract relevant test tags from the user query.
+You extract strict selection requirements from the user query.
 Return ONLY valid JSON:
 {{
-  "tags": ["string"]
+  "tags": ["string"],
+  "required_terms": ["string"]
 }}
 
-Allowed tags: login, registration, change-password, mfa, no-mfa, password-reset, profile, logout, email-verify.
-If none apply, return an empty list.
+Allowed tags are not restricted. Use tags from the query or inferred intent.
+Populate required_terms with exact phrases that must appear in the selected test case
+scenario or steps (e.g., "change password", "reset password").
+If none apply, return empty lists.
 
 User query:
 {query}

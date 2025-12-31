@@ -53,6 +53,17 @@ def router_agent(state: GraphState) -> GraphState:
             confidence = 0.5
             logger.warning(f"[router_agent] Unclear response, using heuristic: {route}")
         
+        if route != "test" and re.search(r"^\s*(run|execute|trigger)\b", query_lower):
+            if re.search(r"\b(sql|database|db)\b", query_lower):
+                route = "db"
+                confidence = max(confidence, 0.7)
+            elif re.search(r"(https?://|\.com\b|\.org\b|\.net\b|\.io\b)", query_lower):
+                route = "web"
+                confidence = max(confidence, 0.7)
+            else:
+                route = "test"
+                confidence = max(confidence, 0.7)
+
         logger.info(f"[router_agent] Decision: {route} (confidence: {confidence:.2f})")
         
         # Store debug info

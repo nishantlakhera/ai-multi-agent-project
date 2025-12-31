@@ -14,6 +14,7 @@ from services.test_run_store import test_run_store
 def start_test_run(
     query: str,
     tags: Optional[List[str]] = None,
+    required_terms: Optional[List[str]] = None,
     doc_filename: Optional[str] = None,
     base_url: Optional[str] = None,
     test_data_override: Optional[Dict[str, Any]] = None,
@@ -23,11 +24,12 @@ def start_test_run(
         "query": query,
         "doc_filename": doc_filename or "",
         "tags": ",".join(tags or []),
+        "required_terms": ",".join(required_terms or []),
     })
 
     thread = threading.Thread(
         target=_run_flow,
-        args=(run_id, query, tags, doc_filename, base_url, test_data_override),
+        args=(run_id, query, tags, required_terms, doc_filename, base_url, test_data_override),
         daemon=True,
     )
     thread.start()
@@ -52,10 +54,43 @@ def _extract_test_data_from_case(test_case: Dict[str, Any]) -> Dict[str, str]:
                 parsed[key] = match.group(2).strip()
     return parsed
 
+def _resolve_placeholders(value: str, data: Dict[str, Any]) -> str:
+    if not isinstance(value, str):
+        return value
+
+    def replace_match(match: re.Match) -> str:
+        key = match.group(1).strip().lower().replace(" ", "_")
+        return str(data.get(key, match.group(0)))
+
+    pattern = re.compile(r"\$\{\s*['\"]?([^\"'}]+)['\"]?\s*\}")
+    return pattern.sub(replace_match, value)
+
+def _strip_wrapping_quotes(value: str) -> str:
+    if not isinstance(value, str) or len(value) < 2:
+        return value
+    if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
+        return value[1:-1]
+    return value
+
+def _apply_test_data_to_dsl(dsl: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
+    if not data:
+        return dsl
+    steps = dsl.get("steps", [])
+    if not isinstance(steps, list):
+        return dsl
+    for step in steps:
+        if not isinstance(step, dict):
+            continue
+        if "value" in step and isinstance(step["value"], str):
+            resolved = _resolve_placeholders(step["value"], data)
+            step["value"] = _strip_wrapping_quotes(resolved)
+    return dsl
+
 def _run_flow(
     run_id: str,
     query: str,
     tags: Optional[List[str]],
+    required_terms: Optional[List[str]],
     doc_filename: Optional[str],
     base_url: Optional[str],
     test_data_override: Optional[Dict[str, Any]],
@@ -82,7 +117,7 @@ def _run_flow(
             cases = extract_test_cases(context)
             test_run_store.cache_catalog(doc_filename or "default", {"test_cases": cases})
 
-        test_case = select_best_case(cases, query, tags)
+        test_case = select_best_case(cases, query, tags, required_terms)
         print(f" Selected test case for run: {test_case}")
         if not test_case:
             test_run_store.update_status(
@@ -104,6 +139,7 @@ def _run_flow(
             base_url=base_url,
             test_data=merged_data or None,
         )
+        dsl = _apply_test_data_to_dsl(dsl, merged_data)
         print(f" Generated test DSL for run: {dsl}")
         if not dsl.get("steps"):
             test_run_store.update_status(run_id, "failed", error="Generated DSL is empty")
