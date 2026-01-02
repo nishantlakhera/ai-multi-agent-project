@@ -63,4 +63,9 @@ def safe_json_loads(text: str) -> dict:
         cleaned = re.sub(r'(name|label|text|placeholder|css)=\\\\\"([^\\\\\"]+)\\\\\"\"', r"\\1='\\2'", cleaned)
         cleaned = re.sub(r'(name|label|text|placeholder|css)=\"([^\"]+)\"', r"\\1='\\2'", cleaned)
         cleaned = re.sub(r",(\s*[}\]])", r"\1", cleaned)
-        return json.loads(cleaned)
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            decoder = json.JSONDecoder()
+            obj, _ = decoder.raw_decode(cleaned)
+            return obj

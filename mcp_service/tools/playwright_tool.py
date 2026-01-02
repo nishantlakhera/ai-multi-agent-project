@@ -46,7 +46,9 @@ def _resolve_locator(page, target: str):
         logger.info(f"[playwright_tool] Locator placeholder={text!r}")
         return page.get_by_placeholder(text)
     if target.startswith("css="):
-        selector = target.split("=", 1)[1]
+        selector = target.split("=", 1)[1].strip()
+        if len(selector) >= 2 and selector[0] == selector[-1] and selector[0] in {"'", '"'}:
+            selector = selector[1:-1]
         logger.info(f"[playwright_tool] Locator css={selector!r}")
         return page.locator(selector)
     logger.info(f"[playwright_tool] Locator raw={target!r}")

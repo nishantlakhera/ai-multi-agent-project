@@ -55,6 +55,25 @@ def _extract_test_data(query: str) -> Dict[str, str]:
 def _normalize_text(text: str) -> str:
     return re.sub(r"\s+", " ", text.lower()).strip()
 
+def _filter_required_terms(required_terms: List[str], test_data: Dict[str, str]) -> List[str]:
+    stop_terms = {"email", "password", "username", "user", "pass", "pwd"}
+    data_keys = set(test_data.keys())
+    filtered = []
+    for term in required_terms:
+        normalized = _normalize_text(term)
+        if normalized in stop_terms:
+            continue
+        if normalized in data_keys:
+            continue
+        filtered.append(term)
+    return filtered
+
+def _restrict_terms_to_query(required_terms: List[str], query: str) -> List[str]:
+    if not required_terms:
+        return []
+    query_text = _normalize_text(query)
+    return [term for term in required_terms if _normalize_text(term) in query_text]
+
 def _has_required_terms(chunks: List[Dict[str, Any]], required_terms: List[str]) -> bool:
     if not required_terms:
         return True
@@ -74,6 +93,9 @@ def test_agent(state: GraphState) -> GraphState:
     print(f" Extracted doc_filename: {doc_filename}")
     test_data = _extract_test_data(query)
     print(f" Extracted test_data: {test_data}")
+    required_terms = _filter_required_terms(required_terms, test_data)
+    required_terms = _restrict_terms_to_query(required_terms, query)
+    print(f" Filtered required_terms: {required_terms}")
 
     chunks = retrieve_testcase_chunks(query, limit=settings.TEST_RAG_TOP_K, filename=doc_filename)
     print(f" Retrieved {len(chunks)} relevant chunks for test run.")

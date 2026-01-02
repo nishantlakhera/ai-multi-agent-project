@@ -8,6 +8,7 @@ Return ONLY valid JSON:
 Allowed tags are not restricted. Use tags from the query or inferred intent.
 Populate required_terms with exact phrases that must appear in the selected test case
 scenario or steps (e.g., "change password", "reset password").
+Do NOT include generic field names like "email", "password", "username" as required_terms.
 If none apply, return empty lists.
 
 User query:

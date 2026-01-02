@@ -41,7 +41,7 @@ def get_test_run(run_id: str) -> Dict[str, Any]:
 def _extract_test_data_from_case(test_case: Dict[str, Any]) -> Dict[str, str]:
     data = test_case.get("test_data")
     if isinstance(data, dict):
-        return {str(k).strip().lower(): str(v).strip() for k, v in data.items()}
+        return {_normalize_key(k): str(v).strip() for k, v in data.items()}
 
     parsed: Dict[str, str] = {}
     if isinstance(data, list):
@@ -50,17 +50,49 @@ def _extract_test_data_from_case(test_case: Dict[str, Any]) -> Dict[str, str]:
                 continue
             match = re.match(r'\s*([^:=]+)\s*[:=]\s*(.+)\s*', item)
             if match:
-                key = match.group(1).strip().lower().replace(" ", "_")
+                key = _normalize_key(match.group(1))
                 parsed[key] = match.group(2).strip()
     return parsed
+
+def _normalize_key(raw: Any) -> str:
+    key = str(raw).strip().lower().replace(" ", "_")
+    key = key.replace("-", "_")
+    return key
+
+def _canonical_key(raw: Any) -> str:
+    key = _normalize_key(raw)
+    synonyms = {
+        "email": "username_field",
+        "username": "username_field",
+        "user": "username_field",
+        "login": "username_field",
+        "password": "password_field",
+        "pass": "password_field",
+        "pwd": "password_field",
+    }
+    return synonyms.get(key, key)
 
 def _resolve_placeholders(value: str, data: Dict[str, Any]) -> str:
     if not isinstance(value, str):
         return value
 
     def replace_match(match: re.Match) -> str:
-        key = match.group(1).strip().lower().replace(" ", "_")
-        return str(data.get(key, match.group(0)))
+        raw_key = match.group(1).strip().lower()
+        normalized = raw_key.replace(" ", "_")
+        candidates = [
+            normalized,
+            normalized.replace(".", "_"),
+        ]
+        if normalized.startswith("test_data."):
+            candidates.append(normalized[len("test_data."):])
+        if normalized.startswith("data."):
+            candidates.append(normalized[len("data."):])
+        if "." in normalized:
+            candidates.append(normalized.split(".")[-1])
+        for key in candidates:
+            if key in data:
+                return str(data.get(key))
+        return match.group(0)
 
     pattern = re.compile(r"\$\{\s*['\"]?([^\"'}]+)['\"]?\s*\}")
     return pattern.sub(replace_match, value)
@@ -128,11 +160,16 @@ def _run_flow(
             return
 
         case_data = _extract_test_data_from_case(test_case)
-        merged_data: Dict[str, Any] = dict(case_data)
+        normalized_case: Dict[str, Any] = {}
+        for key, value in case_data.items():
+            normalized_case[_canonical_key(key)] = value
+
+        merged_data: Dict[str, Any] = dict(normalized_case)
         if test_data_override:
             for key, value in test_data_override.items():
-                if key not in merged_data or not merged_data.get(key):
-                    merged_data[key] = value
+                if value is None or (isinstance(value, str) and not value.strip()):
+                    continue
+                merged_data[_canonical_key(key)] = value
 
         dsl = generate_test_dsl(
             test_case,

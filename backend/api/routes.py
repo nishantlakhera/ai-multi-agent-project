@@ -1,9 +1,10 @@
-from fastapi import APIRouter
-from api.schemas import ChatRequest, ChatResponse, SourceAttribution, TestRunRequest, TestRunResponse, TestRunStatusResponse
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from api.schemas import ChatRequest, ChatResponse, SourceAttribution, TestRunRequest, TestRunResponse, TestRunStatusResponse, RecordingConvertResponse
 from graphs.multi_agent_graph import graph_app
 from graphs.state_schema import GraphState
 from services.memory_service import memory_service
 from services.test_run_service import start_test_run, get_test_run
+from services.recording_conversion_service import convert_recordings
 
 router = APIRouter()
 
@@ -93,3 +94,30 @@ def run_test(req: TestRunRequest):
 @router.get("/tests/{run_id}", response_model=TestRunStatusResponse)
 def get_test_status(run_id: str):
     return get_test_run(run_id)
+
+@router.post("/tests/record/convert", response_model=RecordingConvertResponse)
+async def convert_recordings_to_docx(
+    recordings: list[UploadFile] = File(...),
+    doc_path: str = Form(...),
+    scenario_prefix: str | None = Form(default=None),
+    expected: str | None = Form(default=None),
+    tags: str | None = Form(default=None),
+):
+    if not recordings:
+        raise HTTPException(status_code=400, detail="No recordings provided")
+
+    contents: list[tuple[str, str]] = []
+    for recording in recordings:
+        raw = await recording.read()
+        text = raw.decode("utf-8", errors="ignore")
+        contents.append((recording.filename or "recording", text))
+
+    tag_list = [t.strip() for t in (tags or "").split(",") if t.strip()]
+    appended = convert_recordings(
+        recordings=contents,
+        doc_path=doc_path,
+        scenario_prefix=scenario_prefix,
+        expected=expected,
+        tags=tag_list or None,
+    )
+    return RecordingConvertResponse(appended_cases=appended, doc_path=doc_path)

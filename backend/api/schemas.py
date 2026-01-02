@@ -29,3 +29,7 @@ class TestRunStatusResponse(BaseModel):
     run: Dict[str, Any]
     steps: List[Dict[str, Any]]
     artifacts: List[Dict[str, Any]]
+
+class RecordingConvertResponse(BaseModel):
+    appended_cases: int
+    doc_path: str

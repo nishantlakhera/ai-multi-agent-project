@@ -16,4 +16,5 @@ tenacity
 python-dotenv
 redis
 python-docx
+python-multipart
 textract
